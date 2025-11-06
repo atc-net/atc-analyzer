@@ -1,0 +1,54 @@
+namespace Atc.Analyzer.Tests.Verifiers;
+
+/// <summary>
+/// Verifier for code fix providers.
+/// </summary>
+/// <typeparam name="TAnalyzer">The analyzer type.</typeparam>
+/// <typeparam name="TCodeFix">The code fix provider type.</typeparam>
+internal static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
+    where TAnalyzer : DiagnosticAnalyzer, new()
+    where TCodeFix : CodeFixProvider, new()
+{
+    /// <summary>
+    /// Verifies that the code fix produces the expected fixed code.
+    /// </summary>
+    /// <param name="source">The source code with diagnostics.</param>
+    /// <param name="fixedSource">The expected fixed code.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static Task VerifyCodeFixAsync(
+        string source,
+        string fixedSource)
+    {
+        var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = source,
+            FixedCode = fixedSource,
+        };
+
+        return test.RunAsync();
+    }
+
+    /// <summary>
+    /// Verifies that the code fix produces the expected fixed code with specific diagnostics.
+    /// </summary>
+    /// <param name="source">The source code with diagnostics.</param>
+    /// <param name="expected">The expected diagnostic results.</param>
+    /// <param name="fixedSource">The expected fixed code.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static Task VerifyCodeFixAsync(
+        string source,
+        DiagnosticResult[] expected,
+        string fixedSource)
+    {
+        var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = source,
+            FixedCode = fixedSource,
+        };
+
+        test.ExpectedDiagnostics.AddRange(expected);
+        return test.RunAsync();
+    }
+}

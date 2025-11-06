@@ -1,2 +1,41 @@
 # Atc.Analyzer
+
 A Roslyn analyzer to enforce some good practices in C#.
+
+## Installation
+
+```bash
+dotnet add package Atc.Analyzer
+```
+
+## Usage
+
+Once installed, the analyzer will automatically run during compilation and highlight code issues in your IDE. Code fixes are available for many rules and can be applied directly from your IDE.
+
+## Rules
+
+| Id | Category | Description | Severity | Is enabled | Code fix |
+| --- | --- | --- | --- | --- | --- |
+| [ATC201](docs/rules/ATC201.md) | Style | Single parameter should be kept inline when declaration is short | ⚠️ Warning | ✔️ Yes | ❌ No |
+| [ATC202](docs/rules/ATC202.md) | Style | Multi parameters should be separated onto individual lines | ⚠️ Warning | ✔️ Yes | ✔️ Yes |
+
+### Severity Levels
+
+- ❌ Error - Blocks compilation
+- ⚠️ Warning - Produces a warning during compilation
+- ℹ️ Info - Informational message
+- 👻 Hidden - Not shown in IDE by default
+
+## Categories
+
+### Style
+
+Rules that enforce consistent code formatting and style conventions.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
