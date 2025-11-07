@@ -3,8 +3,6 @@ namespace Atc.Analyzer.Rules.Style;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ParameterSeparationAnalyzer : DiagnosticAnalyzer
 {
-    private const int MaxLineLengthForSingleParam = 80;
-
     private static readonly DiagnosticDescriptor Rule = new(
         RuleIdentifierConstants.Style.ParameterSeparation,
         title: "Multi parameters should be separated onto individual lines",
@@ -13,7 +11,7 @@ public sealed class ParameterSeparationAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "Ensures consistent parameter formatting across method declarations. Parameters should be on separate lines for methods with multiple parameters or when the total line length exceeds the limit.",
-        helpLinkUri: "https://github.com/atc-net/atc-analyzer/blob/main/docs/rules/ATC202.md");
+        helpLinkUri: RuleIdentifierHelper.GetHelpUri(RuleIdentifierConstants.Style.ParameterSeparation));
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
@@ -94,44 +92,15 @@ public sealed class ParameterSeparationAnalyzer : DiagnosticAnalyzer
         }
 
         var parameters = parameterList.Parameters;
-        var sourceText = context.Node.SyntaxTree.GetText();
 
-        // Rule 1: Multiple parameters (2 or more) should be on separate lines
-        if (parameters.Count >= 2)
+        // ATC202: Only handles multiple parameters (2 or more) - they should be on separate lines
+        // Note: Single parameter scenarios are handled by ATC201 (ParameterInlineAnalyzer)
+        if (parameters.Count >= 2 && !AreParametersOnSeparateLines(parameters))
         {
-            if (!AreParametersOnSeparateLines(parameters))
-            {
-                var diagnostic = Diagnostic.Create(
-                    Rule,
-                    parameterList.GetLocation());
-                context.ReportDiagnostic(diagnostic);
-            }
-        }
-
-        // Rule 2: Single parameter - check if line length exceeds 80 characters
-        else if (parameters.Count == 1)
-        {
-            var lineSpan = context.Node.GetLocation().GetLineSpan();
-            var startLine = lineSpan.StartLinePosition.Line;
-            var textLine = sourceText.Lines[startLine];
-            var lineText = textLine.ToString();
-
-            // Check if total line length exceeds 80 characters
-            if (lineText.Length > MaxLineLengthForSingleParam)
-            {
-                // Check if parameter is already on a separate line
-                var paramLocation = parameters[0].GetLocation().GetLineSpan();
-                var paramLine = paramLocation.StartLinePosition.Line;
-
-                // If parameter is on the same line as the declaration start, it needs to be broken
-                if (paramLine == startLine)
-                {
-                    var diagnostic = Diagnostic.Create(
-                        Rule,
-                        parameterList.GetLocation());
-                    context.ReportDiagnostic(diagnostic);
-                }
-            }
+            var diagnostic = Diagnostic.Create(
+                Rule,
+                parameterList.GetLocation());
+            context.ReportDiagnostic(diagnostic);
         }
     }
 

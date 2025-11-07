@@ -250,4 +250,108 @@ public sealed class SyntaxTreeExtensionsTests
         // Assert
         Assert.False(result);
     }
+
+    [Fact]
+    public void GetEndOfLineTrivia_WithNullSyntaxTree_ReturnsLineFeed()
+    {
+        // Arrange
+        SyntaxTree? syntaxTree = null;
+
+        // Act
+        var result = syntaxTree!.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxFactory.LineFeed, result);
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_WithUnixLineEndings_ReturnsLineFeed()
+    {
+        // Arrange
+        const string code = "namespace MyNamespace;\n\npublic class MyClass\n{\n}\n";
+        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+
+        // Act
+        var result = syntaxTree.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxKind.EndOfLineTrivia, result.Kind());
+        Assert.Equal("\n", result.ToString());
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_WithWindowsLineEndings_ReturnsCarriageReturnLineFeed()
+    {
+        // Arrange
+        const string code = "namespace MyNamespace;\r\n\r\npublic class MyClass\r\n{\r\n}\r\n";
+        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+
+        // Act
+        var result = syntaxTree.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxKind.EndOfLineTrivia, result.Kind());
+        Assert.Equal("\r\n", result.ToString());
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_WithNoLineEndings_ReturnsLineFeed()
+    {
+        // Arrange
+        const string code = "namespace MyNamespace;";
+        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+
+        // Act
+        var result = syntaxTree.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxFactory.LineFeed, result);
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_OnNode_WithNullNode_ReturnsLineFeed()
+    {
+        // Arrange
+        SyntaxNode? node = null;
+
+        // Act
+        var result = node!.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxFactory.LineFeed, result);
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_OnNode_WithUnixLineEndings_ReturnsLineFeed()
+    {
+        // Arrange
+        const string code = "namespace MyNamespace;\n\npublic class MyClass\n{\n    public void MyMethod() { }\n}\n";
+        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+        var root = syntaxTree.GetRoot();
+        var methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        // Act
+        var result = methodNode.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxKind.EndOfLineTrivia, result.Kind());
+        Assert.Equal("\n", result.ToString());
+    }
+
+    [Fact]
+    public void GetEndOfLineTrivia_OnNode_WithWindowsLineEndings_ReturnsCarriageReturnLineFeed()
+    {
+        // Arrange
+        const string code = "namespace MyNamespace;\r\n\r\npublic class MyClass\r\n{\r\n    public void MyMethod() { }\r\n}\r\n";
+        var syntaxTree = CSharpSyntaxTree.ParseText(code);
+        var root = syntaxTree.GetRoot();
+        var methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+
+        // Act
+        var result = methodNode.GetEndOfLineTrivia();
+
+        // Assert
+        Assert.Equal(SyntaxKind.EndOfLineTrivia, result.Kind());
+        Assert.Equal("\r\n", result.ToString());
+    }
 }

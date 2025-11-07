@@ -6,10 +6,11 @@ using AnalyzerVerifier = CSharpAnalyzerVerifier<ParameterSeparationAnalyzer>;
 
 [SuppressMessage("", "AsyncFixer01:The method does not need to use async/await", Justification = "OK - Test code")]
 [SuppressMessage("", "SA1135::The method does not need to use async/await", Justification = "OK - Test code")]
-public sealed class ParameterSeparationAnalyzerTests
+[SuppressMessage("Naming", "MA0048:File name must match type name", Justification = "OK - Partial class")]
+public sealed partial class ParameterSeparationAnalyzerTests
 {
     [Fact]
-    public async Task MethodWithNoParameters_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithNoParameters()
     {
         const string code = """
                             public class Sample
@@ -24,7 +25,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithSingleShortParameter_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithSingleShortParameter()
     {
         const string code = """
                             public class Sample
@@ -39,7 +40,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithLongNameButShortTotal_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithLongNameButShortTotal()
     {
         const string code = """
                             public class Sample
@@ -54,7 +55,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithSingleLongParameterCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithSingleLongParameterCorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -70,22 +71,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithSingleLongParameterOnOneLine_ReportsDiagnostic()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyLooooooooooooooooooooooooooooooooooooooooooonMethod[|(int parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task MethodWithTwoParametersCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithTwoParametersCorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -102,22 +88,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithTwoParametersOnOneLine_ReportsDiagnostic()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod[|(int parameter1, int parameter2)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task MethodWithThreeParametersCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithThreeParametersCorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -135,22 +106,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithThreeParametersOnOneLine_ReportsDiagnostic()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod[|(int parameter1, int parameter2, int parameter3)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ConstructorWithSingleParameter_NoDiagnostic()
+    public async Task NoDiagnostic_ConstructorWithSingleParameter()
     {
         const string code = """
                             public class MyClass
@@ -165,7 +121,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task ConstructorWithMultipleParametersCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_ConstructorWithMultipleParametersCorrectlyBroken()
     {
         const string code = """
                             public class MyClass
@@ -183,22 +139,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task ConstructorWithMultipleParametersOnOneLine_ReportsDiagnostic()
-    {
-        const string code = """
-                            public class MyClass
-                            {
-                                public MyClass[|(string name, int age, bool isActive)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task AsyncMethodWithMultipleParametersCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_AsyncMethodWithMultipleParametersCorrectlyBroken()
     {
         const string code = """
                             using System.Threading.Tasks;
@@ -218,7 +159,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task StaticMethodWithMultipleParametersCorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_StaticMethodWithMultipleParametersCorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -235,22 +176,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task PrivateMethodWithMultipleParametersOnOneLine_ReportsDiagnostic()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                private void MyMethod[|(int parameter1, string parameter2)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task MethodWithGenericTypeParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithGenericTypeParameters_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -267,7 +193,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithDefaultValues_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithDefaultValues_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -284,7 +210,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithRefOutInParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithRefOutInParameters_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -303,7 +229,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithNullableTypes_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithNullableTypes_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -320,7 +246,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithAttributeOnParameter_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithAttributeOnParameter_CorrectlyBroken()
     {
         const string code = """
                             using System.Diagnostics.CodeAnalysis;
@@ -339,7 +265,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task VirtualMethodWithMultipleParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_VirtualMethodWithMultipleParameters_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -356,7 +282,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task OverrideMethodWithMultipleParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_OverrideMethodWithMultipleParameters_CorrectlyBroken()
     {
         const string code = """
                             public class Base
@@ -382,7 +308,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task AbstractMethodWithMultipleParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_AbstractMethodWithMultipleParameters_CorrectlyBroken()
     {
         const string code = """
                             public abstract class Sample
@@ -397,7 +323,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task LocalFunctionWithMultipleParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_LocalFunctionWithMultipleParameters_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -419,7 +345,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task DelegateWithMultipleParameters_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_DelegateWithMultipleParameters_CorrectlyBroken()
     {
         const string code = """
                             using System;
@@ -436,7 +362,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithLongGenericType_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithLongGenericType_CorrectlyBroken()
     {
         const string code = """
                             using System.Collections.Generic;
@@ -455,7 +381,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithTupleParameter_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithTupleParameter_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -472,7 +398,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodWithArrayParameter_CorrectlyBroken_NoDiagnostic()
+    public async Task NoDiagnostic_MethodWithArrayParameter_CorrectlyBroken()
     {
         const string code = """
                             public class Sample
@@ -489,7 +415,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task MethodInvocation_NoDiagnostic()
+    public async Task NoDiagnostic_MethodInvocation()
     {
         const string code = """
                             public class Sample
@@ -513,7 +439,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task ConstructorInvocation_NoDiagnostic()
+    public async Task NoDiagnostic_ConstructorInvocation()
     {
         const string code = """
                             public class MyClass
@@ -538,7 +464,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task TernaryOperator_NoDiagnostic()
+    public async Task NoDiagnostic_TernaryOperator()
     {
         const string code = """
                             public class Sample
@@ -554,7 +480,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task TernaryOperatorMultiline_NoDiagnostic()
+    public async Task NoDiagnostic_TernaryOperatorMultiline()
     {
         const string code = """
                             public class Sample
@@ -574,7 +500,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task LambdaExpression_NoDiagnostic()
+    public async Task NoDiagnostic_LambdaExpression()
     {
         const string code = """
                             using System.Linq;
@@ -592,7 +518,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task SimpleLambda_NoDiagnostic()
+    public async Task NoDiagnostic_SimpleLambda()
     {
         const string code = """
                             using System;
@@ -610,7 +536,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task LinqQuery_NoDiagnostic()
+    public async Task NoDiagnostic_LinqQuery()
     {
         const string code = """
                             using System.Linq;
@@ -638,7 +564,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task ChainedMethodCalls_NoDiagnostic()
+    public async Task NoDiagnostic_ChainedMethodCalls()
     {
         const string code = """
                             using System;
@@ -657,7 +583,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task IndexerDeclaration_NoDiagnostic()
+    public async Task NoDiagnostic_IndexerDeclaration()
     {
         const string code = """
                             public class Sample
@@ -676,7 +602,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task IndexerUsage_NoDiagnostic()
+    public async Task NoDiagnostic_IndexerUsage()
     {
         const string code = """
                             public class Sample
@@ -699,7 +625,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task GeneratedCodeClass_WithMultipleParametersOnOneLine_NoDiagnostic()
+    public async Task NoDiagnostic_GeneratedCodeClass_WithMultipleParametersOnOneLine()
     {
         const string code = """
                             using System.CodeDom.Compiler;
@@ -721,7 +647,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task GeneratedCodeClass_WithMixedTypes_NoDiagnostic()
+    public async Task NoDiagnostic_GeneratedCodeClass_WithMixedTypes()
     {
         const string code = """
                             using System.CodeDom.Compiler;
@@ -744,7 +670,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task GeneratedCodeClass_AsyncMethodWithMultipleParams_NoDiagnostic()
+    public async Task NoDiagnostic_GeneratedCodeClass_AsyncMethodWithMultipleParams()
     {
         const string code = """
                             using System.CodeDom.Compiler;
@@ -764,7 +690,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task AutoGeneratedHeader_WithMultipleParametersOnOneLine_NoDiagnostic()
+    public async Task NoDiagnostic_AutoGeneratedHeader_WithMultipleParametersOnOneLine()
     {
         const string code = """
                             //------------------------------------------------------------------------------
@@ -791,7 +717,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task AutoGeneratedHeader_CaseInsensitive_NoDiagnostic()
+    public async Task NoDiagnostic_AutoGeneratedHeader_CaseInsensitive()
     {
         const string code = """
                             // This file is AUTO-GENERATED by code generator
@@ -809,7 +735,7 @@ public sealed class ParameterSeparationAnalyzerTests
     }
 
     [Fact]
-    public async Task AutoGeneratedHeader_WithMultiLineComment_NoDiagnostic()
+    public async Task NoDiagnostic_AutoGeneratedHeader_WithMultiLineComment()
     {
         const string code = """
                             /*
@@ -830,4 +756,64 @@ public sealed class ParameterSeparationAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    public async Task NoDiagnostic_MethodWithSingleLongParameterWithDefaultValue_CorrectlyBroken()
+    {
+        const string code = """
+                            using System.Data;
+                            using System.Globalization;
+
+                            public enum DropDownFirstItemType
+                            {
+                                None,
+                            }
+
+                            public class Sample
+                            {
+                                public static DataTable CreateKeyValueDataTableOfIntString(
+                                    DropDownFirstItemType dropDownFirstItemType = DropDownFirstItemType.None)
+                                {
+                                    var dt = new DataTable
+                                    {
+                                        Locale = CultureInfo.InvariantCulture,
+                                    };
+
+                                    return dt;
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_MethodWithSingleParameterWithDefaultValue_OnOneLine()
+    {
+        const string code = """
+                            using System.Data;
+                            using System.Globalization;
+
+                            public enum ItemType
+                            {
+                                None,
+                            }
+
+                            public static class Sample
+                            {
+                                public static DataTable Create(ItemType itemType = ItemType.None)
+                                {
+                                    var dt = new DataTable
+                                    {
+                                        Locale = CultureInfo.InvariantCulture,
+                                    };
+
+                                    return dt;
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }
+

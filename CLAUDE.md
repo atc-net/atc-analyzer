@@ -21,8 +21,13 @@ dotnet test
 # Run tests in a specific project
 dotnet test test/Atc.Analyzer.Tests/Atc.Analyzer.Tests.csproj
 
-# Run a specific test
-dotnet test --filter "FullyQualifiedName~ParameterSeparationAnalyzerTests"
+# Run tests for a specific category (using xUnit.net filter)
+cd test/Atc.Analyzer.Tests
+dotnet test --filter-class "*Style*"
+
+# Run a specific analyzer's tests
+cd test/Atc.Analyzer.Tests
+dotnet test --filter-class "*ParameterSeparationAnalyzerTests*"
 ```
 
 ### Code Quality
@@ -81,7 +86,49 @@ public sealed class {RuleName}Analyzer : DiagnosticAnalyzer
 
 ### Testing Pattern
 
-Tests mirror the analyzer structure under `test/Atc.Analyzer.Tests/Rules/{Category}/`. Each analyzer should have a corresponding test class: `{RuleName}AnalyzerTests.cs`.
+Tests mirror the analyzer structure under `test/Atc.Analyzer.Tests/Rules/{Category}/`.
+
+#### Test Organization
+
+For analyzers with extensive test coverage, tests should be organized using partial classes split across two files:
+
+1. **`{RuleName}AnalyzerNoDiagnosticTests.cs`** - Tests that verify no diagnostics are reported
+   - All test methods must be prefixed with `NoDiagnostic_`
+   - Contains test cases where the analyzer should NOT report any issues
+
+2. **`{RuleName}AnalyzerReportsDiagnosticTests.cs`** - Tests that verify diagnostics are reported
+   - All test methods must be prefixed with `ReportsDiagnostic_`
+   - Contains test cases where the analyzer SHOULD report issues
+   - Test code uses `[|...|]` markers to indicate expected diagnostic locations
+
+Both files use the same partial class name: `{RuleName}AnalyzerTests`
+
+Example structure:
+```csharp
+// File: ParameterInlineAnalyzerNoDiagnosticTests.cs
+[SuppressMessage("Naming", "MA0048:File name must match type name", Justification = "OK - Partial class")]
+public sealed partial class ParameterInlineAnalyzerTests
+{
+    [Fact]
+    public async Task NoDiagnostic_MethodWithNoParameters()
+    {
+        // Test code that should NOT trigger diagnostics
+    }
+}
+
+// File: ParameterInlineAnalyzerReportsDiagnosticTests.cs
+[SuppressMessage("Naming", "MA0048:File name must match type name", Justification = "OK - Partial class")]
+public sealed partial class ParameterInlineAnalyzerTests
+{
+    [Fact]
+    public async Task ReportsDiagnostic_MethodWithIssue()
+    {
+        // Test code with [|...|] markers for expected diagnostics
+    }
+}
+```
+
+**Note**: The `MA0048` suppression is required because the file names don't match the partial class name.
 
 ## Key Technical Details
 

@@ -1,3 +1,4 @@
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 // ReSharper disable ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
 namespace Atc.Analyzer.Extensions;
 
@@ -46,5 +47,58 @@ public static class SyntaxTreeExtensions
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Gets the end-of-line trivia used in the syntax tree, detecting the existing line ending style.
+    /// </summary>
+    /// <param name="syntaxTree">The syntax tree to analyze.</param>
+    /// <returns>
+    /// The first end-of-line trivia found in the tree, or <see cref="SyntaxFactory.LineFeed"/> if none is found.
+    /// </returns>
+    /// <remarks>
+    /// This method is useful for code fixes to maintain consistent line endings with the existing file.
+    /// It searches for the first end-of-line trivia in the tree and returns it, ensuring the generated
+    /// code matches the existing line ending style (\r\n on Windows or \n on Unix/Linux/macOS).
+    /// </remarks>
+    public static SyntaxTrivia GetEndOfLineTrivia(this SyntaxTree syntaxTree)
+    {
+        if (syntaxTree is null)
+        {
+            return SyntaxFactory.LineFeed;
+        }
+
+        var root = syntaxTree.GetRoot();
+        var endOfLine = root
+            .DescendantTrivia()
+            .FirstOrDefault(t => t.IsKind(SyntaxKind.EndOfLineTrivia));
+
+        // Fallback to Unix-style line ending if none found
+        return endOfLine == default
+            ? SyntaxFactory.LineFeed
+            : endOfLine;
+    }
+
+    /// <summary>
+    /// Gets the end-of-line trivia used in the syntax node, detecting the existing line ending style.
+    /// </summary>
+    /// <param name="node">The syntax node to analyze.</param>
+    /// <returns>
+    /// The first end-of-line trivia found in the node or its ancestors' tree, or <see cref="SyntaxFactory.LineFeed"/> if none is found.
+    /// </returns>
+    /// <remarks>
+    /// This method is useful for code fixes to maintain consistent line endings with the existing file.
+    /// It searches for the first end-of-line trivia in the tree and returns it, ensuring the generated
+    /// code matches the existing line ending style (\r\n on Windows or \n on Unix/Linux/macOS).
+    /// </remarks>
+    public static SyntaxTrivia GetEndOfLineTrivia(this SyntaxNode node)
+    {
+        if (node is null)
+        {
+            return SyntaxFactory.LineFeed;
+        }
+
+        var syntaxTree = node.SyntaxTree;
+        return syntaxTree?.GetEndOfLineTrivia() ?? SyntaxFactory.LineFeed;
     }
 }

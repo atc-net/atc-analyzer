@@ -21,7 +21,9 @@ internal class NotCoveredExamples
 
         // Valid: LINQ queries
         var numbers = new[] { 1, 2, 3, 4, 5 };
-        var evenNumbers = numbers.Where(n => n % 2 == 0).ToList();
+        var evenNumbers = numbers
+            .Where(n => n % 2 == 0)
+            .ToList();
         Console.WriteLine($"Even numbers: {string.Join(", ", evenNumbers)}");
 
         // Valid: Ternary operators

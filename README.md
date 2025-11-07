@@ -17,7 +17,8 @@ Once installed, the analyzer will automatically run during compilation and highl
 | Id | Category | Description | Severity | Is enabled | Code fix |
 | --- | --- | --- | --- | --- | --- |
 | [ATC201](docs/rules/ATC201.md) | Style | Single parameter should be kept inline when declaration is short | ⚠️ Warning | ✔️ Yes | ❌ No |
-| [ATC202](docs/rules/ATC202.md) | Style | Multi parameters should be separated onto individual lines | ⚠️ Warning | ✔️ Yes | ✔️ Yes |
+| [ATC202](docs/rules/ATC202.md) | Style | Multi parameters should be separated onto individual lines | ⚠️ Warning | ✔️ Yes | ❌ No |
+| [ATC203](docs/rules/ATC203.md) | Style | Method chains with 2 or more calls should be broken onto separate lines | ⚠️ Warning | ✔️ Yes | ❌ No |
 
 ### Severity Levels
 

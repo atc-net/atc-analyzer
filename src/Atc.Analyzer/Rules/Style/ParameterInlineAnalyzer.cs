@@ -7,13 +7,13 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor Rule = new(
         RuleIdentifierConstants.Style.ParameterInline,
-        title: "Single parameter should be kept inline when declaration is short",
-        messageFormat: "Single parameter should be on the same line as the method declaration when total line length would not exceed {0} characters",
+        title: "Single parameter should be formatted correctly",
+        messageFormat: "{0}",
         RuleCategoryConstants.Style,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Enforces that single-parameter methods keep the parameter on the same line as the method declaration when the total line length would be under the maximum limit.",
-        helpLinkUri: "https://github.com/atc-net/atc-analyzer/blob/main/docs/rules/ATC201.md");
+        description: "Enforces that single-parameter methods are formatted correctly based on line length.",
+        helpLinkUri: RuleIdentifierHelper.GetHelpUri(RuleIdentifierConstants.Style.ParameterInline));
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
 
@@ -97,43 +97,50 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
         var parameter = parameterList.Parameters[0];
         var sourceText = declarationNode.SyntaxTree.GetText();
 
-        // Get the line positions
-        var declarationLineSpan = declarationNode.GetLocation().GetLineSpan();
-        var declarationStartLine = declarationLineSpan.StartLinePosition.Line;
-
-        var parameterLineSpan = parameter.GetLocation().GetLineSpan();
-        var parameterStartLine = parameterLineSpan.StartLinePosition.Line;
-
-        // Only check if parameter is on a different line than the declaration start
-        if (parameterStartLine == declarationStartLine)
-        {
-            return;
-        }
-
-        // Calculate what the line length would be if the parameter was on the same line
-        // Get the parameter text (just the parameter itself)
-        var parameterText = parameter.ToString();
-
         // Get the line where the opening paren is located
         var openParenLineSpan = parameterList.OpenParenToken.GetLocation().GetLineSpan();
         var openParenLine = openParenLineSpan.StartLinePosition.Line;
         var openParenPosition = openParenLineSpan.StartLinePosition.Character;
 
+        var parameterLineSpan = parameter.GetLocation().GetLineSpan();
+        var parameterStartLine = parameterLineSpan.StartLinePosition.Line;
+
         // Get the text of the line where the opening paren is
         var openParenLineText = sourceText.Lines[openParenLine].ToString();
 
-        // The hypothetical line would be: everything up to and including '(' + parameter + ')'
+        // Case 1: Parameter is on the SAME line as the opening paren
+        if (parameterStartLine == openParenLine)
+        {
+            // Check if the actual line length exceeds the maximum
+            if (openParenLineText.Length > MaxLineLength)
+            {
+                // Line is too long, parameter should be broken to a new line
+                var message = $"Single parameter should be on a new line when the method declaration exceeds {MaxLineLength} characters";
+                var diagnostic = Diagnostic.Create(
+                    Rule,
+                    parameterList.GetLocation(),
+                    message);
+                context.ReportDiagnostic(diagnostic);
+            }
+
+            return;
+        }
+
+        // Case 2: Parameter is on a DIFFERENT line than the opening paren
+        // Calculate what the line length would be if the parameter was on the same line
+        var parameterText = parameter.ToString();
         var textUpToAndIncludingOpenParen = openParenLineText.Substring(0, openParenPosition + 1);
         var hypotheticalLine = textUpToAndIncludingOpenParen + parameterText + ")";
         var hypotheticalLength = hypotheticalLine.Length;
 
-        // If the hypothetical single-line length would be <= MaxLineLength, report a diagnostic
+        // If the hypothetical single-line length would be <= MaxLineLength, parameter should be inline
         if (hypotheticalLength <= MaxLineLength)
         {
+            var message = $"Single parameter should be on the same line as the method declaration when total line length would not exceed {MaxLineLength} characters";
             var diagnostic = Diagnostic.Create(
                 Rule,
                 parameterList.GetLocation(),
-                MaxLineLength);
+                message);
             context.ReportDiagnostic(diagnostic);
         }
     }

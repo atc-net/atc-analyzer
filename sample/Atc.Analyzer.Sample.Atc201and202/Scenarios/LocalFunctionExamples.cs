@@ -37,6 +37,7 @@ internal class LocalFunctionExamples
         LocalNoParams();
         LocalSingleParam(42);
         LocalMultipleParams(10, "test");
-        LocalAsync(1, "async test").Wait();
+        LocalAsync(1, "async test")
+            .Wait();
     }
 }

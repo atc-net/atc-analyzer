@@ -1,4 +1,6 @@
 // ReSharper disable ConvertIfStatementToSwitchStatement
+// ReSharper disable LoopCanBeConvertedToQuery
+// ReSharper disable ForCanBeConvertedToForeach
 namespace Atc.Analyzer.Rules.Style;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ParameterSeparationCodeFixProvider))]
@@ -79,7 +81,7 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
         var parameterIndentation = indentation + "    ";
 
         // Create formatted parameters with proper trivia
-        var endOfLine = SyntaxFactory.EndOfLine("\r\n");
+        var endOfLine = declaration.SyntaxTree.GetEndOfLineTrivia();
         var formattedParameters = default(SeparatedSyntaxList<ParameterSyntax>);
 
         for (var i = 0; i < parameterList.Parameters.Count; i++)

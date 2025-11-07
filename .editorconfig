@@ -574,4 +574,9 @@ dotnet_diagnostic.S6964.severity = none             # Value type property used a
 ##########################################
 [*.{cs,csx,cake}]
 
+dotnet_diagnostic.CA1002.severity = none            # Use 'Collection<T>', 'ReadOnlyCollection<T>' or 'KeyedCollection<K,V>'
+
+dotnet_diagnostic.MA0016.severity = none            # Prefer using collection abstraction instead of implementation
+
+dotnet_diagnostic.S125.severity = none              # False/positive in xml - Remove this commented out code.
 dotnet_diagnostic.S3267.severity = none             # Loops should be simplified using the "Where" LINQ method
