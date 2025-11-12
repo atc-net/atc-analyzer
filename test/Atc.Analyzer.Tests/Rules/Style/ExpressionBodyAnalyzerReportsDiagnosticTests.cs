@@ -1,23 +1,23 @@
 namespace Atc.Analyzer.Tests.Rules.Style;
 
 #pragma warning disable SA1135 // Using directives must be qualified
-using AnalyzerVerifier = CSharpAnalyzerVerifier<ParameterInlineAnalyzer>;
+using AnalyzerVerifier = CSharpAnalyzerVerifier<ExpressionBodyAnalyzer>;
 #pragma warning restore SA1135 // Using directives must be qualified
 
 [SuppressMessage("", "AsyncFixer01:The method does not need to use async/await", Justification = "OK - Test code")]
 [SuppressMessage("", "SA1135::The method does not need to use async/await", Justification = "OK - Test code")]
 [SuppressMessage("Naming", "MA0048:File name must match type name", Justification = "OK - Partial class")]
-public sealed partial class ParameterInlineAnalyzerTests
+public sealed partial class ExpressionBodyAnalyzerTests
 {
     [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleShortParameterOnNewLine()
+    public async Task ReportsDiagnostic_MethodWithSimpleReturnStatement()
     {
         const string code = """
                             public class Sample
                             {
-                                public void ShortMethod[|(
-                                    int parameter1)|]
+                                public static string [|GetData|]()
                                 {
+                                    return "Sample Data";
                                 }
                             }
                             """;
@@ -26,46 +26,14 @@ public sealed partial class ParameterInlineAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleParameterOnSameLine_LongDeclaration()
-    {
-        // Line exceeds 80 characters, parameter should be broken
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyLooooooooooooooooooooooooooooooooooooooooooonMethod[|(int parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_ConstructorWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class MyClass
-                            {
-                                public MyClass[|(
-                                    string name)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_StaticMethodWithSingleShortParameterOnNewLine()
+    public async Task ReportsDiagnostic_MethodWithSimpleReturnStatement_IntValue()
     {
         const string code = """
                             public class Sample
                             {
-                                public static void MyMethod[|(
-                                    int parameter1)|]
+                                public static int [|GetNumber|]()
                                 {
+                                    return 42;
                                 }
                             }
                             """;
@@ -74,17 +42,162 @@ public sealed partial class ParameterInlineAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_AsyncMethodWithSingleShortParameterOnNewLine()
+    public async Task ReportsDiagnostic_MethodWithSimpleReturnStatement_Expression()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static int [|Calculate|](int x, int y)
+                                {
+                                    return x + y;
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_PrivateMethod()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                private static string [|GetData|]()
+                                {
+                                    return "Sample Data";
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_InstanceMethod()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public string [|GetData|]()
+                                {
+                                    return "Sample Data";
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_ExpressionBodyExceeds80Characters()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static string GetData() [|=>|] "Sample Dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_TernaryExpressionWithArrowOnSameLine()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                private static string[] SetHelpArgumentIfNeeded(string[] args) [|=>|]
+                                    args.Length == 0
+                                        ? new[] { "help" }
+                                        : args;
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_GetAccessorWithBlockBody()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                private string name = string.Empty;
+
+                                public string Name
+                                {
+                                    [|get|]
+                                    {
+                                        return name;
+                                    }
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_MethodWithMethodCallReturn()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static string [|GetUpperCase|](string input)
+                                {
+                                    return input.ToUpper();
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_MethodWithTernaryInReturn()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static int [|GetValue|](bool condition)
+                                {
+                                    return condition ? 1 : 0;
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_MethodWithNullCoalescing()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static string [|GetName|](string? input)
+                                {
+                                    return input ?? "default";
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_AsyncMethodWithReturn()
     {
         const string code = """
                             using System.Threading.Tasks;
 
                             public class Sample
                             {
-                                public async Task MyMethodAsync[|(
-                                    int parameter1)|]
+                                public static async Task<string> [|GetDataAsync|]()
                                 {
-                                    await Task.CompletedTask;
+                                    return await Task.FromResult("data");
                                 }
                             }
                             """;
@@ -93,186 +206,16 @@ public sealed partial class ParameterInlineAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_PrivateMethodWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                private void MyMethod[|(
-                                    int parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_MethodWithGenericTypeAndSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod<T>[|(
-                                    T parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleParameterWithDefaultValue_Short_OnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod[|(
-                                    int x = 0)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleRefParameter_Short_OnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod[|(
-                                    ref int x)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleNullableParameter_Short_OnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void MyMethod[|(
-                                    int? x)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_VirtualMethodWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public virtual void MyMethod[|(
-                                    int parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_OverrideMethodWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class Base
-                            {
-                                public virtual void MyMethod(int parameter1)
-                                {
-                                }
-                            }
-
-                            public class Derived : Base
-                            {
-                                public override void MyMethod[|(
-                                    int parameter1)|]
-                                {
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_AbstractMethodWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public abstract class Sample
-                            {
-                                public abstract void MyMethod[|(
-                                    int parameter1)|];
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_LocalFunctionWithSingleShortParameterOnNewLine()
-    {
-        const string code = """
-                            public class Sample
-                            {
-                                public void OuterMethod()
-                                {
-                                    void LocalFunction[|(
-                                        int param1)|]
-                                    {
-                                    }
-
-                                    LocalFunction(1);
-                                }
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_DelegateWithSingleShortParameterOnNewLine()
+    public async Task ReportsDiagnostic_MethodWithLambdaReturn()
     {
         const string code = """
                             using System;
 
                             public class Sample
                             {
-                                public delegate void MyHandler[|(
-                                    int value)|];
-                            }
-                            """;
-
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
-    }
-
-    [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleComplexTypeParameter_Short_OnNewLine()
-    {
-        const string code = """
-                            using System.Collections.Generic;
-
-                            public class Sample
-                            {
-                                public void MyMethod[|(
-                                    List<int> param1)|]
+                                public static Func<int, int> [|GetMultiplier|](int factor)
                                 {
+                                    return x => x * factor;
                                 }
                             }
                             """;
@@ -281,14 +224,14 @@ public sealed partial class ParameterInlineAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleTupleParameter_Short_OnNewLine()
+    public async Task ReportsDiagnostic_MethodWithNewObjectReturn()
     {
         const string code = """
                             public class Sample
                             {
-                                public void MyMethod[|(
-                                    (int x, int y) tuple)|]
+                                public static object [|CreateObject|]()
                                 {
+                                    return new object();
                                 }
                             }
                             """;
@@ -297,14 +240,30 @@ public sealed partial class ParameterInlineAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_MethodWithSingleArrayParameter_Short_OnNewLine()
+    public async Task ReportsDiagnostic_MethodWithArrayReturn()
     {
         const string code = """
                             public class Sample
                             {
-                                public void MyMethod[|(
-                                    string[] items)|]
+                                public static int[] [|GetArray|]()
                                 {
+                                    return new[] { 1, 2, 3 };
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_GenericMethod()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public static T [|GetDefault|]<T>()
+                                {
+                                    return default(T)!;
                                 }
                             }
                             """;

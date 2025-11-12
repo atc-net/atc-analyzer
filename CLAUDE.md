@@ -84,6 +84,58 @@ public sealed class {RuleName}Analyzer : DiagnosticAnalyzer
 }
 ```
 
+### Code Fix Provider Implementation Pattern
+
+When an analyzer can suggest automatic fixes, implement a CodeFixProvider in the same directory:
+
+```csharp
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof({RuleName}CodeFixProvider))]
+[Shared]
+public sealed class {RuleName}CodeFixProvider : CodeFixProvider
+{
+    public override ImmutableArray<string> FixableDiagnosticIds
+        => [RuleIdentifierConstants.{Category}.{RuleName}];
+
+    public override FixAllProvider GetFixAllProvider()
+        => WellKnownFixAllProviders.BatchFixer;
+
+    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    {
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+        if (root is null)
+        {
+            return;
+        }
+
+        var diagnostic = context.Diagnostics.First();
+        var diagnosticSpan = diagnostic.Location.SourceSpan;
+        var node = root.FindNode(diagnosticSpan);
+
+        // Register code fix
+        context.RegisterCodeFix(
+            CodeAction.Create(
+                title: "Fix description",
+                createChangedDocument: c => FixAsync(context.Document, node, c),
+                equivalenceKey: nameof({RuleName}CodeFixProvider)),
+            context.Diagnostics);
+    }
+
+    private static async Task<Document> FixAsync(
+        Document document,
+        SyntaxNode node,
+        CancellationToken cancellationToken)
+    {
+        // Apply fix and return updated document
+    }
+}
+```
+
+**Important notes for CodeFixProviders:**
+- Always use `ConfigureAwait(false)` for async calls
+- Return the modified document using `document.WithSyntaxRoot(newRoot)`
+- Test code fixes thoroughly - they must produce syntactically correct code
+- Code fixes should preserve comments, attributes, and formatting where possible
+
 ### Testing Pattern
 
 Tests mirror the analyzer structure under `test/Atc.Analyzer.Tests/Rules/{Category}/`.
@@ -129,6 +181,54 @@ public sealed partial class ParameterInlineAnalyzerTests
 ```
 
 **Note**: The `MA0048` suppression is required because the file names don't match the partial class name.
+
+#### Testing Code Fix Providers
+
+Code fix tests should be in a separate file: `{RuleName}CodeFixProviderTests.cs`
+
+```csharp
+public sealed class {RuleName}CodeFixProviderTests
+{
+    [Fact]
+    public async Task FixMethod_Description()
+    {
+        const string source = """
+                              // Source code that triggers the diagnostic
+                              public void Method(int x, int y)
+                              {
+                              }
+                              """;
+
+        const string fixedSource = """
+                                   // Expected code after fix is applied
+                                   public void Method(
+                                       int x,
+                                       int y)
+                                   {
+                                   }
+                                   """;
+
+        // Specify expected diagnostic location
+        var expected = new[]
+        {
+            new DiagnosticResult(
+                "ATC###",
+                DiagnosticSeverity.Warning)
+                .WithSpan(lineNumber, startColumn, lineNumber, endColumn),
+        };
+
+        await CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+    }
+}
+```
+
+**Important testing notes:**
+- Always specify the expected diagnostic location with `.WithSpan()` for reliable tests
+- Line numbers are 1-based, column numbers are 0-based
+- Use raw string literals (`"""..."""`) for multi-line test code
+- Test multiple scenarios: methods, constructors, delegates, local functions
+- Include tests with modifiers, attributes, default values, and edge cases
+- The test framework requires explicit diagnostic locations to properly verify fixes
 
 ## Key Technical Details
 
@@ -182,3 +282,46 @@ Settings are configured in:
 - `test/Atc.Analyzer.Tests/` - Unit tests for analyzers
 - `sample/` - Sample projects to test analyzer behavior
 - `Atc.Analyzer.slnx` - Solution file (new XML-based format)
+
+## Troubleshooting
+
+### Visual Studio Not Showing Code Fixes
+
+If code fixes don't appear in Visual Studio's lightbulb menu:
+
+1. **Restart Visual Studio** - This is usually sufficient to reload updated analyzers
+2. **Clean and Rebuild**:
+   ```bash
+   dotnet clean
+   dotnet build
+   ```
+3. **Clear MEF Cache** (if restart doesn't work):
+   ```powershell
+   # Close Visual Studio first, then run:
+   Remove-Item "$env:LOCALAPPDATA\Microsoft\VisualStudio\*\ComponentModelCache" -Recurse -Force
+   ```
+4. **Verify Analyzer Reference** - In sample projects, check the analyzer is referenced as:
+   ```xml
+   <ItemGroup>
+     <ProjectReference Include="..\..\src\Atc.Analyzer\Atc.Analyzer.csproj">
+       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+       <OutputItemType>Analyzer</OutputItemType>
+     </ProjectReference>
+   </ItemGroup>
+   ```
+
+### Test Framework Integration Issues
+
+If code fix tests fail with the Microsoft.CodeAnalysis.Testing framework:
+
+- **Always specify expected diagnostic locations** using `.WithSpan(line, startColumn, line, endColumn)`
+- Without explicit spans, the framework may not properly match diagnostics between source and fixed code
+- Example:
+  ```csharp
+  var expected = new[]
+  {
+      new DiagnosticResult("ATC202", DiagnosticSeverity.Warning)
+          .WithSpan(3, 24, 3, 45),  // Explicit location
+  };
+  await CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+  ```

@@ -46,9 +46,7 @@ internal class NotCoveredExamples
         string a,
         string b,
         string c)
-    {
-        return $"{a}-{b}-{c}";
-    }
+        => $"{a}-{b}-{c}";
 
     // Valid: Indexer declaration with multiple parameters
     public int this[int row, int column]

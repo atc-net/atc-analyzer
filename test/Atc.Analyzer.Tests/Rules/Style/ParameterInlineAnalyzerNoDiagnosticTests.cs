@@ -276,4 +276,3 @@ public sealed partial class ParameterInlineAnalyzerTests
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
 }
-

@@ -69,4 +69,3 @@ public sealed partial class ParameterSeparationAnalyzerTests
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
 }
-

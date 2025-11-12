@@ -10,5 +10,6 @@ internal static class RuleIdentifierConstants
         internal const string ParameterInline = "ATC201";
         internal const string ParameterSeparation = "ATC202";
         internal const string MethodChainSeparation = "ATC203";
+        internal const string ExpressionBody = "ATC210";
     }
 }

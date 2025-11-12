@@ -1,14 +1,11 @@
-// ReSharper disable ConvertIfStatementToSwitchStatement
-// ReSharper disable LoopCanBeConvertedToQuery
-// ReSharper disable ForCanBeConvertedToForeach
 namespace Atc.Analyzer.Rules.Style;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ParameterSeparationCodeFixProvider))]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ParameterInlineCodeFixProvider))]
 [Shared]
-public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
+public sealed class ParameterInlineCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds
-        => [RuleIdentifierConstants.Style.ParameterSeparation];
+        => [RuleIdentifierConstants.Style.ParameterInline];
 
     public override FixAllProvider GetFixAllProvider()
         => WellKnownFixAllProviders.BatchFixer;
@@ -49,29 +46,35 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
                 or LocalFunctionStatementSyntax
                 or DelegateDeclarationSyntax)
         {
-            // Handle different declaration types
-            RegisterCodeFix(context, declaration, parameterList);
+            // Determine which fix to offer based on the diagnostic message
+            var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
+            var title = message.IndexOf("should be on a new line", StringComparison.Ordinal) >= 0
+                ? "Move parameter to new line"
+                : "Move parameter inline";
+
+            RegisterCodeFix(context, declaration, parameterList, title);
         }
     }
 
     private static void RegisterCodeFix(
         CodeFixContext context,
         SyntaxNode declaration,
-        ParameterListSyntax parameterList)
+        ParameterListSyntax parameterList,
+        string title)
     {
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Separate multi parameters onto individual lines",
-                createChangedDocument: c => FormatParametersAsync(context.Document, declaration, parameterList, c),
-                equivalenceKey: nameof(ParameterSeparationCodeFixProvider)),
+                title: title,
+                createChangedDocument: c => FormatParameterAsync(context.Document, declaration, parameterList, title, c),
+                equivalenceKey: nameof(ParameterInlineCodeFixProvider)),
             context.Diagnostics);
     }
 
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
-    private static async Task<Document> FormatParametersAsync(
+    private static async Task<Document> FormatParameterAsync(
         Document document,
         SyntaxNode declaration,
         ParameterListSyntax parameterList,
+        string actionTitle,
         CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
@@ -80,52 +83,26 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
             return document;
         }
 
-        // Calculate indentation - get the declaration's indentation + 4 spaces for parameters
-        var indentation = GetIndentation(declaration);
-        var parameterIndentation = indentation + "    ";
-
-        // Create proper line break trivia
-        var endOfLine = SyntaxFactory.CarriageReturnLineFeed;
-
-        // Build the formatted parameter list manually with correct trivia placement
-        // Based on minimal reproduction test: APPROACH 2 which works!
-        var formattedParams = new List<SyntaxNodeOrToken>();
-
-        for (var i = 0; i < parameterList.Parameters.Count; i++)
+        // Get the single parameter
+        if (parameterList.Parameters.Count != 1)
         {
-            var parameter = parameterList.Parameters[i];
-
-            // First parameter gets just leading whitespace (newline comes from open paren)
-            // Subsequent parameters get newline + whitespace in leading trivia
-            var leadingTrivia = i == 0
-                ? SyntaxFactory.TriviaList(SyntaxFactory.Whitespace(parameterIndentation))
-                : SyntaxFactory.TriviaList(endOfLine, SyntaxFactory.Whitespace(parameterIndentation));
-
-            var formattedParameter = parameter
-                .WithLeadingTrivia(leadingTrivia)
-                .WithTrailingTrivia();  // No trailing trivia
-
-            formattedParams.Add(formattedParameter);
-
-            // Add comma separator with NO trivia (not even empty - just the comma itself)
-            if (i < parameterList.Parameters.Count - 1)
-            {
-                formattedParams.Add(SyntaxFactory.Token(SyntaxKind.CommaToken));
-            }
+            return document;
         }
 
-        // Create the new parameter list from formatted nodes and tokens
-        var newParameters = SyntaxFactory.SeparatedList<ParameterSyntax>(formattedParams);
+        var parameter = parameterList.Parameters[0];
+        ParameterListSyntax newParameterList;
 
-        // Create new parameter list:
-        // - Open paren gets trailing newline
-        // - Close paren gets no leading trivia (stays on same line as last parameter)
-        var newParameterList = parameterList
-            .WithOpenParenToken(parameterList.OpenParenToken.WithTrailingTrivia(endOfLine))
-            .WithParameters(newParameters)
-            .WithCloseParenToken(parameterList.CloseParenToken
-                .WithLeadingTrivia()
-                .WithTrailingTrivia(parameterList.CloseParenToken.TrailingTrivia));
+        if (actionTitle.IndexOf("inline", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            // Move parameter to same line as opening paren
+            newParameterList = FormatParameterInline(parameterList, parameter);
+        }
+        else
+        {
+            // Move parameter to new line
+            var indentation = GetIndentation(declaration);
+            newParameterList = FormatParameterOnNewLine(parameterList, parameter, indentation);
+        }
 
         // Replace the parameter list in the declaration
         var newDeclaration = declaration switch
@@ -139,6 +116,52 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
 
         var newRoot = root.ReplaceNode(declaration, newDeclaration);
         return document.WithSyntaxRoot(newRoot);
+    }
+
+    private static ParameterListSyntax FormatParameterInline(
+        ParameterListSyntax parameterList,
+        ParameterSyntax parameter)
+    {
+        // Remove all leading and trailing trivia from parameter
+        var cleanParameter = parameter
+            .WithLeadingTrivia()
+            .WithTrailingTrivia();
+
+        // Update the parameter list with clean tokens and parameter
+        return parameterList
+            .WithOpenParenToken(parameterList.OpenParenToken.WithTrailingTrivia())
+            .WithParameters(SyntaxFactory.SingletonSeparatedList(cleanParameter))
+            .WithCloseParenToken(parameterList.CloseParenToken
+                .WithLeadingTrivia()
+                .WithTrailingTrivia(parameterList.CloseParenToken.TrailingTrivia));
+    }
+
+    private static ParameterListSyntax FormatParameterOnNewLine(
+        ParameterListSyntax parameterList,
+        ParameterSyntax parameter,
+        string baseIndentation)
+    {
+        // Calculate indentation for the parameter (base + 4 spaces)
+        var parameterIndentation = baseIndentation + "    ";
+
+        // Create line break trivia
+        var endOfLine = SyntaxFactory.CarriageReturnLineFeed;
+
+        // Format the parameter with proper indentation
+        var formattedParameter = parameter
+            .WithLeadingTrivia(
+                SyntaxFactory.TriviaList(
+                    endOfLine,
+                    SyntaxFactory.Whitespace(parameterIndentation)))
+            .WithTrailingTrivia();
+
+        // Create the new parameter list
+        return parameterList
+            .WithOpenParenToken(parameterList.OpenParenToken.WithTrailingTrivia())
+            .WithParameters(SyntaxFactory.SingletonSeparatedList(formattedParameter))
+            .WithCloseParenToken(parameterList.CloseParenToken
+                .WithLeadingTrivia()
+                .WithTrailingTrivia(parameterList.CloseParenToken.TrailingTrivia));
     }
 
     private static string GetIndentation(SyntaxNode node)

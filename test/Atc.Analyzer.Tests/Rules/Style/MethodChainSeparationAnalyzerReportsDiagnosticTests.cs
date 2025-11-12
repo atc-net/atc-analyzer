@@ -316,4 +316,3 @@ public sealed partial class MethodChainSeparationAnalyzerTests
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
 }
-

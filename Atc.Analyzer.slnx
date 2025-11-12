@@ -3,10 +3,12 @@
     <File Path="docs/rules/ATC201.md" />
     <File Path="docs/rules/ATC202.md" />
     <File Path="docs/rules/ATC203.md" />
+    <File Path="docs/rules/ATC210.md" />
   </Folder>
   <Folder Name="/sample/">
     <Project Path="sample/Atc.Analyzer.Sample.Atc201and202/Atc.Analyzer.Sample.Atc201and202.csproj" />
     <Project Path="sample/Atc.Analyzer.Sample.Atc203/Atc.Analyzer.Sample.Atc203.csproj" />
+    <Project Path="sample/Atc.Analyzer.Sample.Atc210/Atc.Analyzer.Sample.Atc210.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Atc.Analyzer/Atc.Analyzer.csproj" />
