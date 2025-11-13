@@ -3,7 +3,7 @@ namespace Atc.Analyzer.Sample.Atc201and202;
 /// <summary>
 /// This sample demonstrates all VALID scenarios for ATC201 and ATC202 analyzers.
 /// ATC201 (ParameterInlineAnalyzer): Single parameter should be kept inline when declaration is short
-/// ATC202 (ParameterSeparationAnalyzer): Method parameters should be separated onto individual lines
+/// ATC202 (ParameterSeparationAnalyzer): Method parameters should be separated on individual lines
 /// - Methods with 2+ parameters: ALL parameters must be on separate lines (ATC202)
 /// - Methods with 1 parameter on long line: Must be on a new line if total line length exceeds 80 characters (ATC202)
 /// - Methods with 1 parameter on short line: Must be on the same line (ATC201)

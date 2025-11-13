@@ -61,7 +61,7 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
     {
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Separate multi parameters onto individual lines",
+                title: "Separate multi parameters on individual lines",
                 createChangedDocument: c => FormatParametersAsync(context.Document, declaration, parameterList, c),
                 equivalenceKey: nameof(ParameterSeparationCodeFixProvider)),
             context.Diagnostics);

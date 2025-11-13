@@ -5,7 +5,7 @@ public sealed class ParameterSeparationAnalyzer : DiagnosticAnalyzer
 {
     private static readonly DiagnosticDescriptor Rule = new(
         RuleIdentifierConstants.Style.ParameterSeparation,
-        title: "Multi parameters should be separated onto individual lines",
+        title: "Multi parameters should be separated on individual lines",
         messageFormat: "Multi parameters should be broken down to separate lines",
         RuleCategoryConstants.Style,
         DiagnosticSeverity.Warning,
