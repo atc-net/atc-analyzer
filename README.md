@@ -1,6 +1,6 @@
 # Atc.Analyzer
 
-A Roslyn analyzer to enforce some good practices in C#.
+A Roslyn analyzer to enforce some good practices in C# in terms of design, usage, security, performance, and style.
 
 ## Installation
 
