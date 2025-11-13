@@ -57,7 +57,7 @@ jobs:
           git push origin stable
 
       - name: 🗳️ Creating library package for pre-release
-        run: dotnet pack -c Release --no-restore -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH_NAME
+        run: dotnet pack -c Release --no-restore -o ${GITHUB_WORKSPACE}/packages -p:RepositoryBranch=$BRANCH_NAME /p:PublicRelease=true
 
       - name: 📦 Push packages to GitHub Package Registry
         run: |
