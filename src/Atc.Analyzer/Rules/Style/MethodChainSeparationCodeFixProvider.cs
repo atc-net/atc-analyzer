@@ -33,6 +33,10 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
                 return node.WithExpression(newExpression);
             }
 
+            // Strip any trailing trivia from the expression to avoid double line breaks
+            // when reformatting partially-formatted chains
+            newExpression = newExpression.WithTrailingTrivia();
+
             // Add line break before the dot operator
             return node
                 .WithExpression(newExpression)
