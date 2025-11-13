@@ -14,16 +14,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/$(OrganizationName)/$(RepositoryName)</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>roslyn;analyzer;code-analysis;csharp;style;formatting</PackageTags>
-    <Description>A Roslyn analyzer to enforce code style and formatting best practices in C# projects</Description>
-    <Copyright>Copyright (c) atc-net. All rights reserved.</Copyright>
   </PropertyGroup>
 
   <ItemGroup Label="Package Content">
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\images\icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\images\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
   <PropertyGroup Label="Build instructions">
@@ -43,18 +37,6 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <!-- Web projects aren't packable by default. To override the default behavior, add the following -->
     <IsPackable>true</IsPackable>
-  </PropertyGroup>
-
-  <PropertyGroup Label="SourceLink">
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Deterministic Build" Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <ItemGroup Label="Build Tools">
