@@ -84,8 +84,8 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
         var indentation = GetIndentation(declaration);
         var parameterIndentation = indentation + "    ";
 
-        // Create proper line break trivia
-        var endOfLine = SyntaxFactory.CarriageReturnLineFeed;
+        // Create proper line break trivia - detect from document
+        var endOfLine = await GetEndOfLineTriviaFromDocumentAsync(document, root, cancellationToken).ConfigureAwait(false);
 
         // Build the formatted parameter list manually with correct trivia placement
         // Based on minimal reproduction test: APPROACH 2 which works!
@@ -179,5 +179,44 @@ public sealed class ParameterSeparationCodeFixProvider : CodeFixProvider
         }
 
         return new string(' ', whitespaceCount);
+    }
+
+    private static async Task<SyntaxTrivia> GetEndOfLineTriviaFromDocumentAsync(
+        Document document,
+        SyntaxNode root,
+        CancellationToken cancellationToken)
+    {
+        // Try to read the end_of_line setting from EditorConfig
+        var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+        if (syntaxTree is not null)
+        {
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+            if (options.TryGetValue("end_of_line", out var endOfLineValue))
+            {
+                return endOfLineValue switch
+                {
+                    "crlf" => SyntaxFactory.CarriageReturnLineFeed,
+                    "lf" => SyntaxFactory.LineFeed,
+                    "cr" => SyntaxFactory.CarriageReturn,
+                    _ => SyntaxFactory.LineFeed,
+                };
+            }
+        }
+
+        // Fallback: check the source text for line endings
+        var sourceText = await root.SyntaxTree.GetTextAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var line in sourceText.Lines)
+        {
+            if (line.EndIncludingLineBreak > line.End)
+            {
+                var lineBreakText = sourceText.ToString(new Microsoft.CodeAnalysis.Text.TextSpan(line.End, line.EndIncludingLineBreak - line.End));
+                return lineBreakText == "\r\n"
+                    ? SyntaxFactory.CarriageReturnLineFeed
+                    : SyntaxFactory.LineFeed;
+            }
+        }
+
+        // Default to LF if we can't detect
+        return SyntaxFactory.LineFeed;
     }
 }

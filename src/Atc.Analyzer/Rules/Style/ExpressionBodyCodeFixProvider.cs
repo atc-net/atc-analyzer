@@ -174,11 +174,14 @@ public sealed class ExpressionBodyCodeFixProvider : CodeFixProvider
         var baseIndentation = GetBaseIndentation(declarationNode);
         var arrowIndentation = baseIndentation + "    "; // Add one level of indentation
 
+        // Get the line ending trivia
+        var endOfLine = await GetEndOfLineTriviaFromDocumentAsync(document, root, cancellationToken).ConfigureAwait(false);
+
         SyntaxNode? newNode = declarationNode switch
         {
-            MethodDeclarationSyntax method => MoveMethodArrowToNewLine(method, arrowIndentation),
-            PropertyDeclarationSyntax property => MovePropertyArrowToNewLine(property, arrowIndentation),
-            AccessorDeclarationSyntax accessor => MoveAccessorArrowToNewLine(accessor, arrowIndentation),
+            MethodDeclarationSyntax method => MoveMethodArrowToNewLine(method, arrowIndentation, endOfLine),
+            PropertyDeclarationSyntax property => MovePropertyArrowToNewLine(property, arrowIndentation, endOfLine),
+            AccessorDeclarationSyntax accessor => MoveAccessorArrowToNewLine(accessor, arrowIndentation, endOfLine),
             _ => null,
         };
 
@@ -193,14 +196,14 @@ public sealed class ExpressionBodyCodeFixProvider : CodeFixProvider
 
     private static MethodDeclarationSyntax? MoveMethodArrowToNewLine(
         MethodDeclarationSyntax method,
-        string arrowIndentation)
+        string arrowIndentation,
+        SyntaxTrivia newLineTrivia)
     {
         if (method.ExpressionBody is null)
         {
             return null;
         }
 
-        var newLineTrivia = SyntaxFactory.CarriageReturnLineFeed;
         var indentationTrivia = SyntaxFactory.Whitespace(arrowIndentation);
 
         var newArrowExpression = method.ExpressionBody
@@ -219,14 +222,14 @@ public sealed class ExpressionBodyCodeFixProvider : CodeFixProvider
 
     private static PropertyDeclarationSyntax? MovePropertyArrowToNewLine(
         PropertyDeclarationSyntax property,
-        string arrowIndentation)
+        string arrowIndentation,
+        SyntaxTrivia newLineTrivia)
     {
         if (property.ExpressionBody is null)
         {
             return null;
         }
 
-        var newLineTrivia = SyntaxFactory.CarriageReturnLineFeed;
         var indentationTrivia = SyntaxFactory.Whitespace(arrowIndentation);
 
         var newArrowExpression = property.ExpressionBody
@@ -245,14 +248,14 @@ public sealed class ExpressionBodyCodeFixProvider : CodeFixProvider
 
     private static AccessorDeclarationSyntax? MoveAccessorArrowToNewLine(
         AccessorDeclarationSyntax accessor,
-        string arrowIndentation)
+        string arrowIndentation,
+        SyntaxTrivia newLineTrivia)
     {
         if (accessor.ExpressionBody is null)
         {
             return null;
         }
 
-        var newLineTrivia = SyntaxFactory.CarriageReturnLineFeed;
         var indentationTrivia = SyntaxFactory.Whitespace(arrowIndentation);
 
         var newArrowExpression = accessor.ExpressionBody
@@ -316,5 +319,44 @@ public sealed class ExpressionBodyCodeFixProvider : CodeFixProvider
         }
 
         return new string(' ', whitespaceCount);
+    }
+
+    private static async Task<SyntaxTrivia> GetEndOfLineTriviaFromDocumentAsync(
+        Document document,
+        SyntaxNode root,
+        CancellationToken cancellationToken)
+    {
+        // Try to read the end_of_line setting from EditorConfig
+        var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+        if (syntaxTree is not null)
+        {
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+            if (options.TryGetValue("end_of_line", out var endOfLineValue))
+            {
+                return endOfLineValue switch
+                {
+                    "crlf" => SyntaxFactory.CarriageReturnLineFeed,
+                    "lf" => SyntaxFactory.LineFeed,
+                    "cr" => SyntaxFactory.CarriageReturn,
+                    _ => SyntaxFactory.LineFeed,
+                };
+            }
+        }
+
+        // Fallback: check the source text for line endings
+        var sourceText = await root.SyntaxTree.GetTextAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var line in sourceText.Lines)
+        {
+            if (line.EndIncludingLineBreak > line.End)
+            {
+                var lineBreakText = sourceText.ToString(new Microsoft.CodeAnalysis.Text.TextSpan(line.End, line.EndIncludingLineBreak - line.End));
+                return lineBreakText == "\r\n"
+                    ? SyntaxFactory.CarriageReturnLineFeed
+                    : SyntaxFactory.LineFeed;
+            }
+        }
+
+        // Default to LF if we can't detect
+        return SyntaxFactory.LineFeed;
     }
 }
