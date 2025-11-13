@@ -101,7 +101,7 @@ public sealed class ParameterInlineCodeFixProvider : CodeFixProvider
         {
             // Move parameter to new line
             var indentation = GetIndentation(declaration);
-            newParameterList = FormatParameterOnNewLine(parameterList, parameter, indentation);
+            newParameterList = await FormatParameterOnNewLineAsync(parameterList, parameter, indentation, document, root, cancellationToken).ConfigureAwait(false);
         }
 
         // Replace the parameter list in the declaration
@@ -136,16 +136,19 @@ public sealed class ParameterInlineCodeFixProvider : CodeFixProvider
                 .WithTrailingTrivia(parameterList.CloseParenToken.TrailingTrivia));
     }
 
-    private static ParameterListSyntax FormatParameterOnNewLine(
+    private static async Task<ParameterListSyntax> FormatParameterOnNewLineAsync(
         ParameterListSyntax parameterList,
         ParameterSyntax parameter,
-        string baseIndentation)
+        string baseIndentation,
+        Document document,
+        SyntaxNode root,
+        CancellationToken cancellationToken)
     {
         // Calculate indentation for the parameter (base + 4 spaces)
         var parameterIndentation = baseIndentation + "    ";
 
-        // Create line break trivia
-        var endOfLine = SyntaxFactory.CarriageReturnLineFeed;
+        // Create line break trivia - detect from document
+        var endOfLine = await GetEndOfLineTriviaFromDocumentAsync(document, root, cancellationToken).ConfigureAwait(false);
 
         // Format the parameter with proper indentation
         var formattedParameter = parameter
@@ -202,5 +205,44 @@ public sealed class ParameterInlineCodeFixProvider : CodeFixProvider
         }
 
         return new string(' ', whitespaceCount);
+    }
+
+    private static async Task<SyntaxTrivia> GetEndOfLineTriviaFromDocumentAsync(
+        Document document,
+        SyntaxNode root,
+        CancellationToken cancellationToken)
+    {
+        // Try to read the end_of_line setting from EditorConfig
+        var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+        if (syntaxTree is not null)
+        {
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+            if (options.TryGetValue("end_of_line", out var endOfLineValue))
+            {
+                return endOfLineValue switch
+                {
+                    "crlf" => SyntaxFactory.CarriageReturnLineFeed,
+                    "lf" => SyntaxFactory.LineFeed,
+                    "cr" => SyntaxFactory.CarriageReturn,
+                    _ => SyntaxFactory.LineFeed,
+                };
+            }
+        }
+
+        // Fallback: check the source text for line endings
+        var sourceText = await root.SyntaxTree.GetTextAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var line in sourceText.Lines)
+        {
+            if (line.EndIncludingLineBreak > line.End)
+            {
+                var lineBreakText = sourceText.ToString(new Microsoft.CodeAnalysis.Text.TextSpan(line.End, line.EndIncludingLineBreak - line.End));
+                return lineBreakText == "\r\n"
+                    ? SyntaxFactory.CarriageReturnLineFeed
+                    : SyntaxFactory.LineFeed;
+            }
+        }
+
+        // Default to LF if we can't detect
+        return SyntaxFactory.LineFeed;
     }
 }

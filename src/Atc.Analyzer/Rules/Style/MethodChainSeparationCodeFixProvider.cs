@@ -11,10 +11,10 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
 
         public MethodChainRewriter(
             string methodIndentation,
-            HashSet<MemberAccessExpressionSyntax> memberAccessesToFormat)
+            HashSet<MemberAccessExpressionSyntax> memberAccessesToFormat,
+            SyntaxTrivia endOfLine)
         {
             this.memberAccessesToFormat = memberAccessesToFormat;
-            var endOfLine = SyntaxFactory.CarriageReturnLineFeed;
             indentationTrivia = SyntaxFactory.TriviaList(endOfLine, SyntaxFactory.Whitespace(methodIndentation));
         }
 
@@ -117,8 +117,11 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
         var baseIndentation = GetBaseIndentation(invocationExpression);
         var methodIndentation = baseIndentation + "    "; // Base + 4 spaces for each method
 
+        // Get the line ending trivia
+        var endOfLine = await GetEndOfLineTriviaFromDocumentAsync(document, root, cancellationToken).ConfigureAwait(false);
+
         // Build the formatted method chain
-        var newInvocationExpression = FormatMethodChain(invocationNodes, methodIndentation);
+        var newInvocationExpression = FormatMethodChain(invocationNodes, methodIndentation, endOfLine);
 
         // Replace the original invocation with the formatted one
         var newRoot = root.ReplaceNode(invocationExpression, newInvocationExpression);
@@ -127,7 +130,8 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
 
     private static InvocationExpressionSyntax FormatMethodChain(
         List<InvocationExpressionSyntax> invocationNodes,
-        string methodIndentation)
+        string methodIndentation,
+        SyntaxTrivia endOfLine)
     {
         // Get the outermost invocation
         var rootInvocation = invocationNodes[0];
@@ -143,7 +147,7 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
         }
 
         // Use a syntax rewriter to transform the method chain
-        var rewriter = new MethodChainRewriter(methodIndentation, memberAccessesToFormat);
+        var rewriter = new MethodChainRewriter(methodIndentation, memberAccessesToFormat, endOfLine);
         var result = (InvocationExpressionSyntax?)rewriter.Visit(rootInvocation);
 
         return result ?? rootInvocation;
@@ -194,5 +198,44 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
         }
 
         return new string(' ', whitespaceCount);
+    }
+
+    private static async Task<SyntaxTrivia> GetEndOfLineTriviaFromDocumentAsync(
+        Document document,
+        SyntaxNode root,
+        CancellationToken cancellationToken)
+    {
+        // Try to read the end_of_line setting from EditorConfig
+        var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+        if (syntaxTree is not null)
+        {
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+            if (options.TryGetValue("end_of_line", out var endOfLineValue))
+            {
+                return endOfLineValue switch
+                {
+                    "crlf" => SyntaxFactory.CarriageReturnLineFeed,
+                    "lf" => SyntaxFactory.LineFeed,
+                    "cr" => SyntaxFactory.CarriageReturn,
+                    _ => SyntaxFactory.LineFeed,
+                };
+            }
+        }
+
+        // Fallback: check the source text for line endings
+        var sourceText = await root.SyntaxTree.GetTextAsync(cancellationToken).ConfigureAwait(false);
+        foreach (var line in sourceText.Lines)
+        {
+            if (line.EndIncludingLineBreak > line.End)
+            {
+                var lineBreakText = sourceText.ToString(new Microsoft.CodeAnalysis.Text.TextSpan(line.End, line.EndIncludingLineBreak - line.End));
+                return lineBreakText == "\r\n"
+                    ? SyntaxFactory.CarriageReturnLineFeed
+                    : SyntaxFactory.LineFeed;
+            }
+        }
+
+        // Default to LF if we can't detect
+        return SyntaxFactory.LineFeed;
     }
 }
