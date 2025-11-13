@@ -86,7 +86,7 @@ public sealed class MethodChainSeparationCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Break method chain onto separate lines",
+                title: "Place method chain on separate lines",
                 createChangedDocument: c => FormatMethodChainAsync(context.Document, invocationExpression, c),
                 equivalenceKey: nameof(MethodChainSeparationCodeFixProvider)),
             context.Diagnostics);

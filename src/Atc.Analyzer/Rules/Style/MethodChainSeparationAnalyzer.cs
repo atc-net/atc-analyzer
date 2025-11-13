@@ -7,7 +7,7 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
 {
     private static readonly DiagnosticDescriptor Rule = new(
         RuleIdentifierConstants.Style.MethodChainSeparation,
-        title: "Method chains with 2 or more calls should be broken onto separate lines",
+        title: "Method chains with 2 or more calls should be placed on separate lines",
         messageFormat: "Method chains with 2 or more calls should be broken down to separate lines",
         RuleCategoryConstants.Style,
         DiagnosticSeverity.Warning,

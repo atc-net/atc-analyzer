@@ -14,14 +14,14 @@ internal sealed class ValidMethodChainExamples
         var trimmed = text.Trim();
         Console.WriteLine($"   Result: '{trimmed}'");
 
-        // Two method calls - properly broken onto separate lines
+        // Two method calls - properly placed on separate lines
         Console.WriteLine("\n2. Two method chains - properly formatted:");
         var result1 = text
             .Trim()
             .ToLower();
         Console.WriteLine($"   Result: '{result1}'");
 
-        // Multiple method chains - properly broken onto separate lines
+        // Multiple method chains - properly placed on separate lines
         Console.WriteLine("\n3. Multiple method chains - properly formatted:");
         var result2 = text
             .Trim()
