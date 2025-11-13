@@ -446,4 +446,130 @@ public sealed class MethodChainSeparationCodeFixProviderTests
 
         return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
     }
+
+    [Fact]
+    public Task FixStringBuilderWithFourMethodCalls()
+    {
+        const string source = """
+                              using System.Text;
+
+                              public class Sample
+                              {
+                                  public void TestMethod()
+                                  {
+                                      var sb = new StringBuilder().Append("Hello").Append(" ").Append("World").ToString();
+                                  }
+                              }
+                              """;
+
+        const string fixedSource = """
+                                   using System.Text;
+
+                                   public class Sample
+                                   {
+                                       public void TestMethod()
+                                       {
+                                           var sb = new StringBuilder()
+                                               .Append("Hello")
+                                               .Append(" ")
+                                               .Append("World")
+                                               .ToString();
+                                       }
+                                   }
+                                   """;
+
+        var expected = new[]
+        {
+            new DiagnosticResult(
+                "ATC203",
+                DiagnosticSeverity.Warning)
+                .WithSpan(7, 18, 7, 92),
+        };
+
+        return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+    }
+
+    [Fact]
+    public Task FixStringBuilderWithNewKeyword()
+    {
+        const string source = """
+                              using System.Text;
+
+                              public class Sample
+                              {
+                                  public void TestMethod()
+                                  {
+                                      var result = new StringBuilder().Append("Test").ToString();
+                                  }
+                              }
+                              """;
+
+        const string fixedSource = """
+                                   using System.Text;
+
+                                   public class Sample
+                                   {
+                                       public void TestMethod()
+                                       {
+                                           var result = new StringBuilder()
+                                               .Append("Test")
+                                               .ToString();
+                                       }
+                                   }
+                                   """;
+
+        var expected = new[]
+        {
+            new DiagnosticResult(
+                "ATC203",
+                DiagnosticSeverity.Warning)
+                .WithSpan(7, 22, 7, 67),
+        };
+
+        return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+    }
+
+    [Fact]
+    public Task FixStringBuilderWithPartiallyFormattedChain()
+    {
+        const string source = """
+                              using System.Text;
+
+                              public class Sample
+                              {
+                                  public void TestMethod()
+                                  {
+                                      var sb = new StringBuilder().Append("Hello")
+                                          .Append(" ").Append("World")
+                                          .ToString();
+                                  }
+                              }
+                              """;
+
+        const string fixedSource = """
+                                   using System.Text;
+
+                                   public class Sample
+                                   {
+                                       public void TestMethod()
+                                       {
+                                           var sb = new StringBuilder()
+                                               .Append("Hello")
+                                               .Append(" ")
+                                               .Append("World")
+                                               .ToString();
+                                       }
+                                   }
+                                   """;
+
+        var expected = new[]
+        {
+            new DiagnosticResult(
+                "ATC203",
+                DiagnosticSeverity.Warning)
+                .WithSpan(7, 18, 9, 24),
+        };
+
+        return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+    }
 }
