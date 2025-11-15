@@ -247,6 +247,41 @@ global using Microsoft.CodeAnalysis;
 global using Microsoft.CodeAnalysis.Diagnostics;
 ```
 
+#### Global Usings Analyzers: Dual Policy Pattern
+
+The project implements two separate analyzers for enforcing global usings, following a **clear separation of concerns** principle:
+
+**ATC220: GlobalUsingsAllAnalyzer (Strict Policy)**
+- Flags ALL using directives (except static usings and aliases)
+- Requires every namespace to be moved to GlobalUsings.cs
+- Best for: Internal projects, maximum consistency, zero boilerplate
+- Implementation: `GlobalUsingsAllAnalyzer.cs` + `GlobalUsingsAllCodeFixProvider.cs`
+
+**ATC221: GlobalUsingsCommonAnalyzer (Lenient Policy)**
+- Flags only System/Microsoft/Atc namespaces
+- Allows third-party usings in individual files
+- Best for: Library projects, projects with many third-party dependencies
+- Implementation: `GlobalUsingsCommonAnalyzer.cs` + `GlobalUsingsCommonCodeFixProvider.cs`
+
+**Why Two Separate Analyzers?**
+
+While these analyzers could theoretically be merged into one with different rule IDs, they are kept separate to:
+1. **Clear separation of concerns**: Each analyzer has a single, well-defined responsibility
+2. **Simpler code**: Each analyzer has its own straightforward filter logic
+3. **Independent evolution**: Rules can evolve independently without affecting each other
+4. **Easier testing**: Each analyzer can be tested in isolation
+5. **Better maintainability**: Clear naming and organization
+
+**Common Implementation Details:**
+
+Both analyzers:
+- Skip GlobalUsings.cs itself to avoid circular diagnostics
+- Exclude static usings (`using static System.Console`)
+- Exclude using aliases (`using Constants = Domain.Constants`)
+- Exclude generated code files
+- Share the same code fix pattern (move to GlobalUsings.cs with alphabetical ordering by namespace group)
+- Use the same namespace grouping: System → Atc → Microsoft → Others
+
 ### Code Analysis Configuration
 
 The project enforces strict code quality standards:

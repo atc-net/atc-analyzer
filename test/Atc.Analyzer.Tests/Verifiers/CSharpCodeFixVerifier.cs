@@ -20,8 +20,8 @@ internal static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
         string fixedSource)
     {
         // Normalize line endings to LF for cross-platform compatibility
-        var normalizedSource = source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
-        var normalizedFixedSource = fixedSource.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
+        var normalizedSource = source.NormalizeLineEndings();
+        var normalizedFixedSource = fixedSource.NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
         {
@@ -49,8 +49,8 @@ internal static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
         string fixedSource)
     {
         // Normalize line endings to LF for cross-platform compatibility
-        var normalizedSource = source.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
-        var normalizedFixedSource = fixedSource.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
+        var normalizedSource = source.NormalizeLineEndings();
+        var normalizedFixedSource = fixedSource.NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
         {

@@ -1,5 +1,8 @@
 namespace Atc.Analyzer;
 
+/// <summary>
+/// Defines the categories for source generator diagnostics.
+/// </summary>
 internal static class RuleCategoryConstants
 {
     /// <summary>

@@ -2,6 +2,7 @@ global using System.Diagnostics.CodeAnalysis;
 
 global using Atc.Analyzer.Extensions;
 global using Atc.Analyzer.Rules.Style;
+global using Atc.Analyzer.Tests.Extensions;
 global using Atc.Analyzer.Tests.Verifiers;
 
 global using Microsoft.CodeAnalysis;
