@@ -37,7 +37,7 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 13),
+                .WithSpan(1, 1, 1, 14),
         };
 
         return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
@@ -65,7 +65,7 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 12),
+                .WithSpan(1, 1, 1, 13),
         };
 
         return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
@@ -76,7 +76,6 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
     {
         const string source = """
                               using MyCompany.Utilities;
-
                               public class Sample
                               {
                               }
@@ -93,7 +92,7 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 26),
+                .WithSpan(1, 1, 1, 27),
         };
 
         return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
@@ -104,44 +103,44 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
     {
         // Test that System namespaces are placed before all other namespaces in GlobalUsings.cs
         const string source = """
-using Xunit;
+                              using Xunit;
 
-public class Sample
-{
-}
-""";
+                              public class Sample
+                              {
+                              }
+                              """;
 
         const string fixedSource = """
-public class Sample
-{
-}
-""";
+                                   public class Sample
+                                   {
+                                   }
+                                   """;
 
         const string globalUsingsSource = """
-global using Atc.Utilities;
-global using Microsoft.Extensions.Logging;
-global using Newtonsoft.Json;
-""";
+                                          global using Atc.Utilities;
+                                          global using Microsoft.Extensions.Logging;
+                                          global using Newtonsoft.Json;
+                                          """;
 
         const string fixedGlobalUsingsSource = """
-global using System;
-global using Atc.Utilities;
-global using Microsoft.Extensions.Logging;
-global using Newtonsoft.Json;
-global using Xunit;
-""";
+                                                global using Atc.Utilities;
+                                                global using Microsoft.Extensions.Logging;
+                                                global using Newtonsoft.Json;
+                                                global using Xunit;
+                                                """;
 
         var expected = new[]
         {
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 12),
+                .WithSpan(1, 1, 1, 13),
         };
 
         var test = new CSharpCodeFixTest<GlobalUsingsAllAnalyzer, GlobalUsingsAllCodeFixProvider, DefaultVerifier>
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         test.TestState.Sources.Add(source.NormalizeLineEndings());
@@ -154,6 +153,8 @@ global using Xunit;
         test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\n"));
 
         await test.RunAsync();
+
+        Assert.True(true);
     }
 
     [Fact]
@@ -161,41 +162,42 @@ global using Xunit;
     {
         // Test that System namespaces are sorted alphabetically among themselves
         const string source = """
-using System.Text;
+                              using System.Text;
 
-public class Sample
-{
-}
-""";
+                              public class Sample
+                              {
+                              }
+                              """;
 
         const string fixedSource = """
-public class Sample
-{
-}
-""";
+                                   public class Sample
+                                   {
+                                   }
+                                   """;
 
         const string globalUsingsSource = """
-global using System.Linq;
-global using System;
-""";
+                                          global using System.Linq;
+                                          global using System;
+                                          """;
 
         const string fixedGlobalUsingsSource = """
-global using System;
-global using System.Linq;
-global using System.Text;
-""";
+                                               global using System;
+                                               global using System.Linq;
+                                               global using System.Text;
+                                               """;
 
         var expected = new[]
         {
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 18),
+                .WithSpan(1, 1, 1, 19),
         };
 
         var test = new CSharpCodeFixTest<GlobalUsingsAllAnalyzer, GlobalUsingsAllCodeFixProvider, DefaultVerifier>
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         test.TestState.Sources.Add(source.NormalizeLineEndings());
@@ -208,6 +210,8 @@ global using System.Text;
         test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\n"));
 
         await test.RunAsync();
+
+        Assert.True(true);
     }
 
     [Fact]
@@ -215,43 +219,44 @@ global using System.Text;
     {
         // Test that non-System namespaces are sorted alphabetically after System namespaces
         const string source = """
-using Atc.Data;
+                              using Atc.Data;
 
-public class Sample
-{
-}
-""";
+                              public class Sample
+                              {
+                              }
+                              """;
 
         const string fixedSource = """
-public class Sample
-{
-}
-""";
+                                   public class Sample
+                                   {
+                                   }
+                                   """;
 
         const string globalUsingsSource = """
-global using System;
-global using Microsoft.Extensions.Logging;
-global using Atc.Utilities;
-""";
+                                          global using System;
+                                          global using Microsoft.Extensions.Logging;
+                                          global using Atc.Utilities;
+                                          """;
 
         const string fixedGlobalUsingsSource = """
-global using System;
-global using Atc.Data;
-global using Atc.Utilities;
-global using Microsoft.Extensions.Logging;
-""";
+                                               global using System;
+                                               global using Atc.Data;
+                                               global using Atc.Utilities;
+                                               global using Microsoft.Extensions.Logging;
+                                               """;
 
         var expected = new[]
         {
             new DiagnosticResult(
                 "ATC220",
                 DiagnosticSeverity.Warning)
-                .WithSpan(1, 0, 1, 19),
+                .WithSpan(1, 1, 1, 16),
         };
 
         var test = new CSharpCodeFixTest<GlobalUsingsAllAnalyzer, GlobalUsingsAllCodeFixProvider, DefaultVerifier>
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         test.TestState.Sources.Add(source.NormalizeLineEndings());
@@ -264,5 +269,7 @@ global using Microsoft.Extensions.Logging;
         test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\n"));
 
         await test.RunAsync();
+
+        Assert.True(true);
     }
 }

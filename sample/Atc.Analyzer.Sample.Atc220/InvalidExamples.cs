@@ -1,8 +1,7 @@
 namespace Atc.Analyzer.Sample.Atc220;
 
 // These usings SHOULD be moved to GlobalUsings.cs and will trigger ATC220
-#pragma warning disable ATC220
-#pragma warning disable ATC221
+#pragma warning disable ATC220, ATC221
 
 using System.Linq;           // ATC220: Should be in GlobalUsings.cs
 using System.Text;           // ATC220: Should be in GlobalUsings.cs

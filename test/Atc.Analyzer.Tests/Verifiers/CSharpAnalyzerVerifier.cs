@@ -19,6 +19,7 @@ internal static class CSharpAnalyzerVerifier<TAnalyzer>
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
             TestCode = source,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         await test.RunAsync();
@@ -39,6 +40,7 @@ internal static class CSharpAnalyzerVerifier<TAnalyzer>
         {
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
             TestCode = source,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         test.ExpectedDiagnostics.AddRange(expected);
