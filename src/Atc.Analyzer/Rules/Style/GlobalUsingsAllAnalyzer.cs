@@ -35,6 +35,19 @@ public sealed class GlobalUsingsAllAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        // Check if any type in the file has GeneratedCode attribute
+        var root = context.Node.SyntaxTree.GetRoot(context.CancellationToken);
+        var hasGeneratedCodeAttribute = root.DescendantNodes()
+            .OfType<TypeDeclarationSyntax>()
+            .Any(typeDecl => typeDecl.AttributeLists
+                .SelectMany(al => al.Attributes)
+                .Any(attr => attr.Name.ToString().Contains("GeneratedCode")));
+
+        if (hasGeneratedCodeAttribute)
+        {
+            return;
+        }
+
         var usingDirective = (UsingDirectiveSyntax)context.Node;
 
         // Skip if this is GlobalUsings.cs

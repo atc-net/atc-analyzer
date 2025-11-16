@@ -16,7 +16,11 @@ public static class StringExtensions
     /// Transforms: "\r\n" (CRLF) → "\n" (LF) and "\r" (CR) → "\n" (LF).
     /// </remarks>
     public static string NormalizeLineEndings(this string value)
-        => value
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        return value
             .Replace("\r\n", "\n", StringComparison.Ordinal)
             .Replace("\r", "\n", StringComparison.Ordinal);
+    }
 }

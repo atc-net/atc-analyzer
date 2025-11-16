@@ -28,6 +28,7 @@ internal static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
             TestCode = normalizedSource,
             FixedCode = normalizedFixedSource,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         // Configure consistent line endings for cross-platform compatibility
@@ -57,6 +58,7 @@ internal static class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
             TestCode = normalizedSource,
             FixedCode = normalizedFixedSource,
+            CompilerDiagnostics = CompilerDiagnostics.None,
         };
 
         // Configure consistent line endings for cross-platform compatibility
