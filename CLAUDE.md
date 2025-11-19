@@ -116,6 +116,40 @@ private static void AnalyzeSomething(SyntaxNodeAnalysisContext context)
 
 This pattern is used by GlobalUsings analyzers and should be applied to other analyzers that shouldn't analyze generated code.
 
+#### Analyzing Source-Generated Code
+
+**Default behavior:** Most analyzers use `ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None)` to skip generated code.
+
+**Special case:** Analyzers that need to analyze **user-written attributes or declarations** that trigger source generators should use different flags:
+
+```csharp
+public override void Initialize(AnalysisContext context)
+{
+    // For analyzers that need to analyze source-generated code declarations
+    context.ConfigureGeneratedCodeAnalysis(
+        GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+    context.EnableConcurrentExecution();
+
+    context.RegisterSyntaxNodeAction(AnalyzeMethodDeclaration, SyntaxKind.MethodDeclaration);
+}
+```
+
+**When to use `Analyze | ReportDiagnostics`:**
+- Analyzing attributes that trigger source generators (e.g., `[GeneratedRegex]`)
+- Examining method/type declarations that will have generated implementations
+- Checking parameters or configurations of source generator attributes
+- Any scenario where the user-written code (not the generated output) needs analysis
+
+**Example:**
+The `GeneratedRegexCompiledFlagAnalyzer` (ATC301) must use `Analyze | ReportDiagnostics` because:
+- It analyzes the `[GeneratedRegex]` attribute parameters (user-written code)
+- The attribute triggers a source generator, but the attribute itself is in user source files
+- The redundant flag can be detected before code generation occurs
+
+**Important:** Register for the appropriate syntax kind:
+- For attribute-triggered analyzers, register for the decorated member type (e.g., `SyntaxKind.MethodDeclaration`)
+- NOT `SyntaxKind.Attribute` directly, as source-generated methods may not trigger attribute node analysis
+
 ### Code Fix Provider Implementation Pattern
 
 When an analyzer can suggest automatic fixes, implement a CodeFixProvider in the same directory:
