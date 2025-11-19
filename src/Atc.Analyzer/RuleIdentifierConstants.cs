@@ -40,4 +40,15 @@ internal static class RuleIdentifierConstants
         /// </summary>
         internal const string GlobalUsingsCommon = "ATC221";
     }
+
+    /// <summary>
+    /// Usage - RuleIdentifiers from ATC301 to RuleIdentifier ATC399.
+    /// </summary>
+    internal static class Usage
+    {
+        /// <summary>
+        /// Remove redundant RegexOptions.Compiled flag from [GeneratedRegex] attribute.
+        /// </summary>
+        internal const string GeneratedRegexCompiledFlag = "ATC301";
+    }
 }
