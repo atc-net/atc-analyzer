@@ -92,6 +92,10 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        // Get the configured max line length from .editorconfig
+        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
+        var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ParameterInline);
+
         var parameter = parameterList.Parameters[0];
         var sourceText = declarationNode.SyntaxTree.GetText();
 
@@ -110,10 +114,10 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
         if (parameterStartLine == openParenLine)
         {
             // Check if the actual line length exceeds the maximum
-            if (openParenLineText.Length > Constants.MaxLineLength)
+            if (openParenLineText.Length > maxLineLength)
             {
                 // Line is too long, parameter should be broken to a new line
-                var message = $"Single parameter should be on a new line when the method declaration exceeds {Constants.MaxLineLength} characters";
+                var message = $"Single parameter should be on a new line when the method declaration exceeds {maxLineLength} characters";
                 var diagnostic = Diagnostic.Create(
                     Rule,
                     parameterList.GetLocation(),
@@ -131,10 +135,10 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
         var hypotheticalLine = textUpToAndIncludingOpenParen + parameterText + ")";
         var hypotheticalLength = hypotheticalLine.Length;
 
-        // If the hypothetical single-line length would be <= Constants.MaxLineLength, parameter should be inline
-        if (hypotheticalLength <= Constants.MaxLineLength)
+        // If the hypothetical single-line length would be <= maxLineLength, parameter should be inline
+        if (hypotheticalLength <= maxLineLength)
         {
-            var message = $"Single parameter should be on the same line as the method declaration when total line length would not exceed {Constants.MaxLineLength} characters";
+            var message = $"Single parameter should be on the same line as the method declaration when total line length would not exceed {maxLineLength} characters";
             var diagnostic = Diagnostic.Create(
                 Rule,
                 parameterList.GetLocation(),

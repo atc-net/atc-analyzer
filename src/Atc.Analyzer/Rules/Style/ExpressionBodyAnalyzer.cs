@@ -10,7 +10,7 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
         RuleCategoryConstants.Style,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Methods and properties with simple return statements should use expression body syntax (=>) for conciseness. Expression bodies longer than 80 characters should place the arrow on a new line.",
+        description: "Methods and properties with simple return statements should use expression body syntax (=>) for conciseness. Expression bodies longer than the configured maximum should place the arrow on a new line.",
         helpLinkUri: RuleIdentifierHelper.GetHelpUri(RuleIdentifierConstants.Style.ExpressionBody));
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
@@ -129,6 +129,10 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
     {
         var sourceText = declarationNode.SyntaxTree.GetText();
 
+        // Get the configured max line length from .editorconfig
+        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
+        var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ExpressionBody);
+
         // Get the ArrowExpressionClause
         ArrowExpressionClauseSyntax? arrowExpression = declarationNode switch
         {
@@ -150,7 +154,7 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
 
         if (lineInfo.ArrowLineNumber == lineInfo.IdentifierLineNumber)
         {
-            CheckSameLineFormatting(context, arrowToken, lineInfo, hasComplexExpression);
+            CheckSameLineFormatting(context, arrowToken, lineInfo, hasComplexExpression, maxLineLength);
         }
     }
 
@@ -175,14 +179,15 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
         SyntaxNodeAnalysisContext context,
         SyntaxToken arrowToken,
         LineInfo lineInfo,
-        bool hasComplexExpression)
+        bool hasComplexExpression,
+        int maxLineLength)
     {
-        if (lineInfo.DeclarationLineLength > Constants.MaxLineLength)
+        if (lineInfo.DeclarationLineLength > maxLineLength)
         {
             var diagnostic = Diagnostic.Create(
                 Rule,
                 arrowToken.GetLocation(),
-                "Expression body exceeds 80 characters, move '=>' to a new line");
+                $"Expression body exceeds {maxLineLength} characters, move '=>' to a new line");
 
             context.ReportDiagnostic(diagnostic);
             return;
@@ -208,6 +213,10 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
             return;
         }
 
+        // Get the configured max line length from .editorconfig
+        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
+        var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ExpressionBody);
+
         var sourceText = accessorDeclaration.SyntaxTree.GetText();
         var arrowToken = accessorDeclaration.ExpressionBody.ArrowToken;
         var expression = accessorDeclaration.ExpressionBody.Expression;
@@ -229,12 +238,12 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
             var declarationLineText = arrowLine.ToString();
             var declarationLineLength = declarationLineText.TrimEnd().Length;
 
-            if (declarationLineLength > Constants.MaxLineLength)
+            if (declarationLineLength > maxLineLength)
             {
                 var diagnostic = Diagnostic.Create(
                     Rule,
                     arrowToken.GetLocation(),
-                    "Expression body exceeds 80 characters, move '=>' to a new line");
+                    $"Expression body exceeds {maxLineLength} characters, move '=>' to a new line");
 
                 context.ReportDiagnostic(diagnostic);
                 return;
