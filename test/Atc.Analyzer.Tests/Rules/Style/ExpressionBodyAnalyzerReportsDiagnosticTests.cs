@@ -270,4 +270,35 @@ public sealed partial class ExpressionBodyAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_ExpressionBodyExceedsCustomLimit()
+    {
+        // This line is ~60 characters, within default 80 but exceeds configured 50
+        const string code = """
+                            public class Sample
+                            {
+                                public static string GetData() [|=>|] "Sample Data Here";
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<ExpressionBodyAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC210.max_line_length = 50
+            """));
+
+        await test.RunAsync();
+    }
 }

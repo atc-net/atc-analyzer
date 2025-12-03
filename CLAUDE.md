@@ -470,6 +470,44 @@ Settings are configured in:
 - `Directory.Build.props` - Shared MSBuild properties and analyzer references
 - `.editorconfig` - ATC coding rules (from atc-coding-rules repository)
 
+### Configurable Analyzer Options
+
+Some analyzers support configuration via `.editorconfig`:
+
+#### Max Line Length (ATC201, ATC210)
+
+Both `ParameterInlineAnalyzer` (ATC201) and `ExpressionBodyAnalyzer` (ATC210) support configuring the maximum line length:
+
+```editorconfig
+[*.cs]
+# Configure max line length for ATC201 (single parameter formatting)
+dotnet_diagnostic.ATC201.max_line_length = 120
+
+# Configure max line length for ATC210 (expression body arrow placement)
+dotnet_diagnostic.ATC210.max_line_length = 100
+```
+
+- **Default value**: 80 characters
+- **Valid range**: 40-500 characters (values outside this range are clamped)
+- **Invalid values**: Non-numeric values silently fall back to the default
+
+The configuration uses the standard Roslyn `.editorconfig` option naming convention: `dotnet_diagnostic.{RULE_ID}.option_name`
+
+#### Reading Configuration in Analyzers
+
+To read custom `.editorconfig` options in an analyzer, use the `AnalyzerConfigOptionsExtensions` helper:
+
+```csharp
+private static void AnalyzeMethod(SyntaxNodeAnalysisContext context)
+{
+    // Get the configured max line length from .editorconfig
+    var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
+    var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ParameterInline);
+
+    // Use maxLineLength in your analysis...
+}
+```
+
 ## Development Workflow
 
 1. When adding a new analyzer rule:

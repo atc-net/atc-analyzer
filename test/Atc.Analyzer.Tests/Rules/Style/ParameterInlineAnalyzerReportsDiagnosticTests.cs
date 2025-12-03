@@ -311,4 +311,71 @@ public sealed partial class ParameterInlineAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_MethodWithSingleParameterOnSameLine_WithLowerCustomMaxLineLength()
+    {
+        // This line is ~55 characters, within default 80 but exceeds configured 50
+        const string code = """
+                            public class Sample
+                            {
+                                public void MyMethodWithLongName[|(int parameter1)|]
+                                {
+                                }
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<ParameterInlineAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC201.max_line_length = 50
+            """));
+
+        await test.RunAsync();
+    }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_MethodWithSingleParameterOnNewLine_WithHigherCustomMaxLineLength()
+    {
+        // Parameter is on new line, but would be ~40 chars inline which is within configured 120
+        const string code = """
+                            public class Sample
+                            {
+                                public void ShortMethod[|(
+                                    int x)|]
+                                {
+                                }
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<ParameterInlineAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC201.max_line_length = 120
+            """));
+
+        await test.RunAsync();
+    }
 }
