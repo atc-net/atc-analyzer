@@ -103,8 +103,12 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
             .Where(inv => inv.Expression is MemberAccessExpressionSyntax || inv.ArgumentList.Arguments.Count == 0)
             .ToList();
 
-        // We only care about chains with 2 or more method calls
-        if (invocationNodes.Count < 2)
+        // Get the configurable minimum chain length from .editorconfig
+        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(invocationExpression.SyntaxTree);
+        var minChainLength = options.GetMinChainLength(RuleIdentifierConstants.Style.MethodChainSeparation);
+
+        // We only care about chains with minChainLength or more method calls
+        if (invocationNodes.Count < minChainLength)
         {
             return false;
         }

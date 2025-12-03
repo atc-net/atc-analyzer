@@ -193,4 +193,40 @@ public sealed partial class GlobalUsingsCommonAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_CustomNamespacePrefix_WithCustomPrefixes()
+    {
+        // Custom prefix should trigger diagnostic when ONLY custom prefix is configured
+        const string code = """
+                            [|using MyCompany.Utilities;|]
+                            using ThirdParty.Library;
+                            using System;
+
+                            public class Sample
+                            {
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<GlobalUsingsCommonAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        // Use ONLY MyCompany as prefix - this verifies custom prefixes work
+        // System should NOT be flagged with this config (only MyCompany should be)
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC221.namespace_prefixes = MyCompany
+            """));
+
+        await test.RunAsync();
+    }
 }

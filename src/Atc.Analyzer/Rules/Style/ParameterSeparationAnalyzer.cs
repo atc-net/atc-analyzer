@@ -93,9 +93,13 @@ public sealed class ParameterSeparationAnalyzer : DiagnosticAnalyzer
 
         var parameters = parameterList.Parameters;
 
-        // ATC202: Only handles multiple parameters (2 or more) - they should be on separate lines
+        // Get the configurable minimum parameter count from .editorconfig
+        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
+        var minParamCount = options.GetMinParameterCount(RuleIdentifierConstants.Style.ParameterSeparation);
+
+        // ATC202: Only handles multiple parameters (minParamCount or more) - they should be on separate lines
         // Note: Single parameter scenarios are handled by ATC201 (ParameterInlineAnalyzer)
-        if (parameters.Count >= 2 && !AreParametersOnSeparateLines(parameters))
+        if (parameters.Count >= minParamCount && !AreParametersOnSeparateLines(parameters))
         {
             var diagnostic = Diagnostic.Create(
                 Rule,

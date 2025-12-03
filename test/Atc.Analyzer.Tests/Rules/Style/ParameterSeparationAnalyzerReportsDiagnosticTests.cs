@@ -68,4 +68,38 @@ public sealed partial class ParameterSeparationAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_MethodWithThreeParametersOnOneLine_WithCustomMinParamCount()
+    {
+        // This method has 3 parameters on one line, and we set min_parameter_count = 3
+        // so it SHOULD trigger a diagnostic
+        const string code = """
+                            public class Sample
+                            {
+                                public void MyMethod[|(int parameter1, int parameter2, int parameter3)|]
+                                {
+                                }
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<ParameterSeparationAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC202.min_parameter_count = 3
+            """));
+
+        await test.RunAsync();
+    }
 }
