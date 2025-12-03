@@ -162,4 +162,36 @@ public sealed partial class GlobalUsingsCommonAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task NoDiagnostic_SystemNamespace_WithCustomPrefixesExcludingSystem()
+    {
+        // System namespace should NOT trigger diagnostic when custom prefixes exclude System
+        const string code = """
+                            using System;
+
+                            public class Sample
+                            {
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<GlobalUsingsCommonAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC221.namespace_prefixes = MyCompany;OtherCompany
+            """));
+
+        await test.RunAsync();
+    }
 }

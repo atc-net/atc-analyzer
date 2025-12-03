@@ -315,4 +315,39 @@ public sealed partial class MethodChainSeparationAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    [SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
+    public async Task ReportsDiagnostic_ThreeMethodChainsOnOneLine_WithCustomMinChainLength()
+    {
+        // This chain has 3 methods on one line, and we set min_chain_length = 3
+        // so it SHOULD trigger a diagnostic
+        const string code = """
+                            public class Sample
+                            {
+                                public void TestMethod(string str)
+                                {
+                                    var result = [|str.Trim().Replace("x", "y").ToLower()|];
+                                }
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<MethodChainSeparationAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC203.min_chain_length = 3
+            """));
+
+        await test.RunAsync();
+    }
 }
