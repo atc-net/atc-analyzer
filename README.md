@@ -22,6 +22,7 @@ Once installed, the analyzer will automatically run during compilation and highl
 | [ATC210](docs/rules/ATC210.md) | Style | Use expression body syntax when appropriate | ⚠️ Warning | ✔️ Yes | ✅ Yes |
 | [ATC220](docs/rules/ATC220.md) | Style | Use global usings for all namespaces (strict policy) | ⚠️ Warning | ✔️ Yes | ✅ Yes |
 | [ATC221](docs/rules/ATC221.md) | Style | Use global usings for common namespaces (lenient policy) | ⚠️ Warning | ✔️ Yes | ✅ Yes |
+| [ATC230](docs/rules/ATC230.md) | Style | Require exactly one blank line between code blocks | ⚠️ Warning | ✔️ Yes | ✅ Yes |
 | [ATC301](docs/rules/ATC301.md) | Usage | Remove redundant RegexOptions.Compiled flag from [GeneratedRegex] attribute | ⚠️ Warning | ✔️ Yes | ✅ Yes |
 
 ### Severity Levels

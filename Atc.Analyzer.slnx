@@ -13,6 +13,7 @@
     <Project Path="sample/Atc.Analyzer.Sample.Atc210/Atc.Analyzer.Sample.Atc210.csproj" />
     <Project Path="sample/Atc.Analyzer.Sample.Atc220/Atc.Analyzer.Sample.Atc220.csproj" />
     <Project Path="sample/Atc.Analyzer.Sample.Atc221/Atc.Analyzer.Sample.Atc221.csproj" />
+    <Project Path="sample/Atc.Analyzer.Sample.Atc230/Atc.Analyzer.Sample.Atc230.csproj" />
     <Project Path="sample/Atc.Analyzer.Sample.Atc301/Atc.Analyzer.Sample.Atc301.csproj" />
   </Folder>
   <Folder Name="/src/">
