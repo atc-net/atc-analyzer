@@ -39,6 +39,11 @@ internal static class RuleIdentifierConstants
         /// Use global usings for common namespaces (System, Microsoft, Atc).
         /// </summary>
         internal const string GlobalUsingsCommon = "ATC221";
+
+        /// <summary>
+        /// Require one blank line between consecutive code blocks.
+        /// </summary>
+        internal const string BlankLineBetweenCodeBlocks = "ATC230";
     }
 
     /// <summary>

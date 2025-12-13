@@ -413,7 +413,7 @@ The project has been migrated to .NET 10:
 - Main analyzer targets netstandard2.0 (compatible with all modern .NET versions)
 - Test project targets net10.0
 - Tests use `ReferenceAssemblies.Net.Net90` in test configuration (Net100 not yet available)
-- All 290 tests passing on .NET 10
+- All 323 tests passing on .NET 10
 
 ### Global Usings
 
