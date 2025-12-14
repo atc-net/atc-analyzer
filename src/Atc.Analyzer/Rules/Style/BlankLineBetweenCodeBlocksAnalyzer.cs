@@ -104,7 +104,11 @@ public sealed class BlankLineBetweenCodeBlocksAnalyzer : DiagnosticAnalyzer
         StatementSyntax second)
     {
         // Get the end line of the first statement
-        var firstEndLine = first.GetLocation().GetLineSpan().EndLinePosition.Line;
+        var firstEndLine = first
+            .GetLocation()
+            .GetLineSpan()
+            .EndLinePosition
+            .Line;
 
         // Get the start line of the second statement (or its first non-whitespace leading trivia)
         var secondStartLine = GetEffectiveStartLine(second);
@@ -117,7 +121,7 @@ public sealed class BlankLineBetweenCodeBlocksAnalyzer : DiagnosticAnalyzer
 
     private static int GetEffectiveStartLine(StatementSyntax statement)
     {
-        // Check leading trivia for comments - if there's a comment, use its line position
+        // Check leading trivia for comments or preprocessor directives - if found, use its line position
         var leadingTrivia = statement.GetLeadingTrivia();
 
         foreach (var trivia in leadingTrivia)
@@ -125,9 +129,15 @@ public sealed class BlankLineBetweenCodeBlocksAnalyzer : DiagnosticAnalyzer
             if (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.MultiLineCommentTrivia) ||
                 trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia))
+                trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia) ||
+                trivia.IsKind(SyntaxKind.IfDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.ElseDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.ElifDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.EndIfDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.RegionDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia))
             {
-                // Return the line where the comment starts
+                // Return the line where the trivia starts
                 return trivia
                            .GetLocation()?
                            .GetLineSpan()
@@ -140,6 +150,10 @@ public sealed class BlankLineBetweenCodeBlocksAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        return statement.GetLocation().GetLineSpan().StartLinePosition.Line;
+        return statement
+            .GetLocation()
+            .GetLineSpan()
+            .StartLinePosition
+            .Line;
     }
 }

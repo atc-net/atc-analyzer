@@ -432,4 +432,32 @@ public sealed partial class BlankLineBetweenCodeBlocksAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    public async Task NoDiagnostic_BlockStatementWithPreprocessorDirectiveBetween()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public void Method(string value)
+                                {
+                                    if (string.IsNullOrEmpty(value))
+                                    {
+                                        return;
+                                    }
+
+                            #if NETSTANDARD2_0
+                                    return;
+                            #else
+                                    if (value.Length == 1)
+                                    {
+                                        return;
+                                    }
+                            #endif
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }
