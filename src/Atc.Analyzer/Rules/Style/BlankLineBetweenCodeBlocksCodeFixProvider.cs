@@ -68,12 +68,16 @@ public sealed class BlankLineBetweenCodeBlocksCodeFixProvider : CodeFixProvider
             context.Diagnostics);
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "OK.")]
     private static async Task<Document> FixBlankLinesAsync(
         Document document,
         StatementSyntax secondStatement,
         CancellationToken cancellationToken)
     {
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        var root = await document
+            .GetSyntaxRootAsync(cancellationToken)
+            .ConfigureAwait(false);
+
         if (root is null)
         {
             return document;
@@ -85,22 +89,28 @@ public sealed class BlankLineBetweenCodeBlocksCodeFixProvider : CodeFixProvider
         // Get the leading trivia of the second statement
         var leadingTrivia = secondStatement.GetLeadingTrivia();
 
-        // Separate comments from whitespace
-        var comments = new List<SyntaxTrivia>();
-        var hasFoundComment = false;
+        // Separate comments and preprocessor directives from whitespace
+        var preservedTrivia = new List<SyntaxTrivia>();
+        var hasFoundPreservedTrivia = false;
 
         foreach (var trivia in leadingTrivia)
         {
             if (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+                trivia.IsKind(SyntaxKind.MultiLineCommentTrivia) ||
+                trivia.IsKind(SyntaxKind.IfDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.ElseDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.ElifDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.EndIfDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.RegionDirectiveTrivia) ||
+                trivia.IsKind(SyntaxKind.EndRegionDirectiveTrivia))
             {
-                hasFoundComment = true;
-                comments.Add(trivia);
+                hasFoundPreservedTrivia = true;
+                preservedTrivia.Add(trivia);
             }
-            else if (hasFoundComment && trivia.IsKind(SyntaxKind.EndOfLineTrivia))
+            else if (hasFoundPreservedTrivia && trivia.IsKind(SyntaxKind.EndOfLineTrivia))
             {
-                // Keep the newline after the comment
-                comments.Add(trivia);
+                // Keep the newline after the preserved trivia
+                preservedTrivia.Add(trivia);
             }
         }
 
@@ -113,11 +123,11 @@ public sealed class BlankLineBetweenCodeBlocksCodeFixProvider : CodeFixProvider
             endOfLine, // This is the blank line
         };
 
-        // Add back any comments with their proper trivia
-        if (comments.Count > 0)
+        // Add back any preserved trivia (comments, preprocessor directives) with their proper trivia
+        if (preservedTrivia.Count > 0)
         {
             newTriviaList.Add(SyntaxFactory.Whitespace(indentation));
-            newTriviaList.AddRange(comments);
+            newTriviaList.AddRange(preservedTrivia);
         }
 
         // Add the indentation for the statement
