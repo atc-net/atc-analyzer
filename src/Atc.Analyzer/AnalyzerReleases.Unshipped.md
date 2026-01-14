@@ -5,3 +5,9 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+
+### Changed Rules
+
+Rule ID | New Category | New Severity | Old Category | Old Severity | Notes
+--------|--------------|--------------|--------------|--------------|-------
+ATC203 | Style | Info | Style | Warning | Changed severity from Warning to Info (Suggestion)
