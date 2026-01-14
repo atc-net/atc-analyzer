@@ -10,7 +10,7 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
         title: "Method chains with 2 or more calls should be placed on separate lines",
         messageFormat: "Method chains with 2 or more calls should be broken down to separate lines",
         RuleCategoryConstants.Style,
-        DiagnosticSeverity.Warning,
+        DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         description: "Ensures consistent method chain formatting. When chaining 2 or more method calls, each method should be on a separate line for better readability.",
         helpLinkUri: RuleIdentifierHelper.GetHelpUri(RuleIdentifierConstants.Style.MethodChainSeparation));

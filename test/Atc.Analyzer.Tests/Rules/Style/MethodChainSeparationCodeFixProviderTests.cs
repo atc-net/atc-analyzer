@@ -36,7 +36,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(5, 22, 5, 42),
         };
 
@@ -73,7 +73,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(5, 22, 5, 62),
         };
 
@@ -116,7 +116,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(8, 22, 8, 75),
         };
 
@@ -157,7 +157,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 22, 7, 85),
         };
 
@@ -193,7 +193,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(5, 16, 5, 36),
         };
 
@@ -237,7 +237,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(9, 22, 9, 86),
         };
 
@@ -274,7 +274,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(5, 22, 5, 72),
         };
 
@@ -314,7 +314,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 22, 7, 72),
         };
 
@@ -352,7 +352,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(6, 18, 6, 38),
         };
 
@@ -392,7 +392,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 27, 7, 47),
         };
 
@@ -440,7 +440,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(9, 30, 9, 53),
         };
 
@@ -482,7 +482,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 18, 7, 92),
         };
 
@@ -522,7 +522,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 22, 7, 67),
         };
 
@@ -566,7 +566,7 @@ public sealed class MethodChainSeparationCodeFixProviderTests
         {
             new DiagnosticResult(
                 "ATC203",
-                DiagnosticSeverity.Warning)
+                DiagnosticSeverity.Info)
                 .WithSpan(7, 18, 9, 24),
         };
 
