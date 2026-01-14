@@ -8,6 +8,16 @@ A Roslyn analyzer to enforce some good practices in C# in terms of design, usage
 dotnet add package Atc.Analyzer
 ```
 
+## Compatibility
+
+| Requirement | Minimum Version |
+| --- | --- |
+| .NET SDK | 6.0+ |
+| Visual Studio | 2022 (17.0+) |
+| Roslyn | 4.14.0+ |
+
+The analyzer is built against Roslyn 4.14.0 for broad compatibility with .NET 6, 7, 8, 9, and 10 projects.
+
 ## Usage
 
 Once installed, the analyzer will automatically run during compilation and highlight code issues in your IDE. Code fixes are available for many rules and can be applied directly from your IDE.
