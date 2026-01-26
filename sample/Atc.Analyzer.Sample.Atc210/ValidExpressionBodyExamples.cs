@@ -89,7 +89,7 @@ internal sealed class ValidExpressionBodyExamples
     // Example 6: Method with multiple statements (block body is correct)
     public static string GetProcessedData()
     {
-        var data = "Sample";
+        const string data = "Sample";
         return data.ToUpper();
     }
 
@@ -122,6 +122,17 @@ internal sealed class ValidExpressionBodyExamples
     {
         get => backingField;
         set => backingField = value;
+    }
+
+    // Example 16: Long accessor expression bodies are valid (no line length enforcement for accessors)
+    private string? longValue1;
+    private string? longValue2;
+    private string? longValue3;
+
+    public string LongAccessorExpressionBody
+    {
+        get => longValue1 ?? longValue2 ?? longValue3 ?? "This is a very long default value for the property getter";
+        set => longValue1 = value ?? throw new ArgumentNullException(nameof(value), "LongAccessorExpressionBody cannot be null");
     }
 
     // Example 12: Method with method call
