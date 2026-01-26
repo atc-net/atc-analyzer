@@ -213,10 +213,6 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        // Get the configured max line length from .editorconfig
-        var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
-        var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ExpressionBody);
-
         var sourceText = accessorDeclaration.SyntaxTree.GetText();
         var arrowToken = accessorDeclaration.ExpressionBody.ArrowToken;
         var expression = accessorDeclaration.ExpressionBody.Expression;
@@ -233,31 +229,20 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
 
         var hasComplexExpression = expression is ConditionalExpressionSyntax;
 
-        if (arrowLineNumber == keywordLineNumber)
+        // Note: Line length check is intentionally skipped for property accessors.
+        // Property accessors are constrained by the property structure, and forcing
+        // a newline for the arrow in accessors may reduce readability.
+        // Only check for multi-line complex expressions.
+        if (arrowLineNumber == keywordLineNumber &&
+            expressionLineNumber > arrowLineNumber &&
+            hasComplexExpression)
         {
-            var declarationLineText = arrowLine.ToString();
-            var declarationLineLength = declarationLineText.TrimEnd().Length;
+            var diagnostic = Diagnostic.Create(
+                Rule,
+                arrowToken.GetLocation(),
+                "For multi-line expressions, move '=>' to a new line");
 
-            if (declarationLineLength > maxLineLength)
-            {
-                var diagnostic = Diagnostic.Create(
-                    Rule,
-                    arrowToken.GetLocation(),
-                    $"Expression body exceeds {maxLineLength} characters, move '=>' to a new line");
-
-                context.ReportDiagnostic(diagnostic);
-                return;
-            }
-
-            if (expressionLineNumber > arrowLineNumber && hasComplexExpression)
-            {
-                var diagnostic = Diagnostic.Create(
-                    Rule,
-                    arrowToken.GetLocation(),
-                    "For multi-line expressions, move '=>' to a new line");
-
-                context.ReportDiagnostic(diagnostic);
-            }
+            context.ReportDiagnostic(diagnostic);
         }
     }
 }

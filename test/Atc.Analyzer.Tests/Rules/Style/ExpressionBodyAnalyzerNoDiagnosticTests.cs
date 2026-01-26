@@ -361,4 +361,103 @@ public sealed partial class ExpressionBodyAnalyzerTests
 
         await test.RunAsync();
     }
+
+    [Fact]
+    public async Task NoDiagnostic_GetAccessorWithLongExpressionBody()
+    {
+        // Property accessor expression bodies are excluded from line length checks
+        const string code = """
+                            public class Sample
+                            {
+                                private readonly ISettingsService settingsService = null!;
+                                private readonly Camera Camera = null!;
+
+                                public bool ShowOverlayTitle
+                                {
+                                    get => Camera.Overrides?.ShowOverlayTitle ?? settingsService.CameraDisplay.ShowOverlayTitle;
+                                    set { }
+                                }
+                            }
+
+                            public class Camera
+                            {
+                                public CameraOverrides? Overrides { get; set; }
+                            }
+
+                            public class CameraOverrides
+                            {
+                                public bool? ShowOverlayTitle { get; set; }
+                            }
+
+                            public interface ISettingsService
+                            {
+                                ICameraDisplay CameraDisplay { get; }
+                            }
+
+                            public interface ICameraDisplay
+                            {
+                                bool ShowOverlayTitle { get; }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_SetAccessorWithLongExpressionBody()
+    {
+        // Property accessor expression bodies are excluded from line length checks
+        const string code = """
+                            using System;
+
+                            public class Sample
+                            {
+                                private string value = string.Empty;
+
+                                public string Value
+                                {
+                                    get => value;
+                                    set => this.value = value ?? throw new ArgumentNullException(nameof(value), "Value cannot be null");
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_AccessorWithVeryLongNullCoalescingExpression()
+    {
+        // Even very long accessor expression bodies should not trigger diagnostics
+        const string code = """
+                            public class Sample
+                            {
+                                private readonly IService service = null!;
+
+                                public string DisplayName
+                                {
+                                    get => service.Configuration?.Settings?.DisplayName ?? service.Configuration?.Settings?.DefaultName ?? "Default";
+                                    set { }
+                                }
+                            }
+
+                            public interface IService
+                            {
+                                IConfiguration? Configuration { get; }
+                            }
+
+                            public interface IConfiguration
+                            {
+                                ISettings? Settings { get; }
+                            }
+
+                            public interface ISettings
+                            {
+                                string? DisplayName { get; }
+                                string? DefaultName { get; }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }

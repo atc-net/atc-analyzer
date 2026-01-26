@@ -7,6 +7,7 @@
     <File Path="docs/rules/ATC210.md" />
     <File Path="docs/rules/ATC220.md" />
     <File Path="docs/rules/ATC221.md" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/sample/">
     <Project Path="sample/Atc.Analyzer.Sample.Atc201and202/Atc.Analyzer.Sample.Atc201and202.csproj" />
