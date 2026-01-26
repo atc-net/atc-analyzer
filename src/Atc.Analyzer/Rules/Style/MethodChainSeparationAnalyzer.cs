@@ -82,6 +82,12 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
     {
         invocationNodes = [];
 
+        // Skip method chains inside interpolated strings - these are handled by ATC204
+        if (IsInInterpolatedString(invocationExpression))
+        {
+            return false;
+        }
+
         // Find the root of the method chain
         var chainRoot = invocationExpression.GetMethodChainRoot();
 
@@ -215,5 +221,21 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
         // If base expression and first method are on the same line, but there are
         // subsequent methods on different lines, this is inconsistent formatting
         return baseExpressionLine == firstMethodLine;
+    }
+
+    private static bool IsInInterpolatedString(InvocationExpressionSyntax invocationExpression)
+    {
+        var current = invocationExpression.Parent;
+        while (current is not null)
+        {
+            if (current is InterpolatedStringExpressionSyntax)
+            {
+                return true;
+            }
+
+            current = current.Parent;
+        }
+
+        return false;
     }
 }

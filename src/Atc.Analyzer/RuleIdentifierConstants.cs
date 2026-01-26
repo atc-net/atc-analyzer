@@ -26,6 +26,11 @@ internal static class RuleIdentifierConstants
         internal const string MethodChainSeparation = "ATC203";
 
         /// <summary>
+        /// Chained method calls in interpolated strings should be simplified.
+        /// </summary>
+        internal const string InterpolationMethodChain = "ATC204";
+
+        /// <summary>
         /// Use expression body syntax when appropriate.
         /// </summary>
         internal const string ExpressionBody = "ATC210";

@@ -5,6 +5,7 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+ATC204 | Style | Info | Chained method calls in interpolated strings should be simplified
 
 ### Changed Rules
 
