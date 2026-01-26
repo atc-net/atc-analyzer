@@ -622,4 +622,42 @@ public sealed partial class MethodChainSeparationAnalyzerTests
 
         await test.RunAsync();
     }
+
+    [Fact]
+    public async Task NoDiagnostic_MethodChainInsideInterpolatedString()
+    {
+        // Method chains inside interpolated strings should be skipped by ATC203
+        // They are handled by ATC204 instead
+        const string code = """
+                            public class Sample
+                            {
+                                public void TestMethod()
+                                {
+                                    var myVar = "test";
+                                    var result = $"Hello {myVar.ToString().ToLower()} world";
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_MultipleMethodChainsInsideInterpolatedString()
+    {
+        // Multiple method chains inside interpolated strings should be skipped by ATC203
+        const string code = """
+                            public class Sample
+                            {
+                                public void TestMethod()
+                                {
+                                    var a = "first";
+                                    var b = "second";
+                                    var result = $"{a.Trim().ToLower()} and {b.Trim().ToUpper()}";
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }
