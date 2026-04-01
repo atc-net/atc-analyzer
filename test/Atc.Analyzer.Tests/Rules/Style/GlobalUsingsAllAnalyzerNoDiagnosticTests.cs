@@ -118,4 +118,49 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
 
         await AnalyzerVerifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    public async Task NoDiagnostic_SystemNamespace_DefaultExcludesCommon()
+    {
+        const string code = """
+                            using System;
+
+                            public class Sample
+                            {
+                                public static void DoSomething()
+                                {
+                                }
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_MicrosoftNamespace_DefaultExcludesCommon()
+    {
+        const string code = """
+                            using Microsoft.Extensions.Logging;
+
+                            public class Sample
+                            {
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_AtcNamespace_DefaultExcludesCommon()
+    {
+        const string code = """
+                            using Atc.Utilities;
+
+                            public class Sample
+                            {
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }

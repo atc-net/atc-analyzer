@@ -1,9 +1,9 @@
 namespace Atc.Analyzer.Sample.Atc221;
 
-#pragma warning disable ATC220
+#pragma warning disable ATC220 // ATC220 still flags third-party namespaces like Xunit
 
 // No usings from System/Microsoft/Atc here - they're in GlobalUsings.cs
-using Xunit; // Third-party namespace - this is OK
+using Xunit; // Third-party namespace - OK for ATC221, but ATC220 flags non-common namespaces
 
 #pragma warning disable CA1303
 #pragma warning disable CA1822

@@ -121,6 +121,38 @@ public static class AnalyzerConfigOptionsExtensions
         }
 
         /// <summary>
+        /// Gets whether common namespaces should be excluded from the specified rule.
+        /// When true, namespaces matching ATC221's configured prefixes are skipped to avoid duplicate diagnostics.
+        /// </summary>
+        /// <param name="ruleId">The rule identifier (e.g., "ATC220").</param>
+        /// <returns>
+        /// True if common namespaces should be excluded (default), false otherwise.
+        /// </returns>
+        /// <remarks>
+        /// Configure in .editorconfig using:
+        /// <code>
+        /// dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+        /// </code>
+        /// </remarks>
+        public bool GetExcludeCommonNamespaces(string ruleId)
+        {
+            if (options is null)
+            {
+                return true;
+            }
+
+            var key = $"dotnet_diagnostic.{ruleId}.exclude_common_namespaces";
+
+            if (!options.TryGetValue(key, out var value) ||
+                string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            return !value.Equals("false", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Gets the configured namespace prefixes for the specified rule from .editorconfig.
         /// </summary>
         /// <param name="ruleId">The rule identifier (e.g., "ATC221").</param>
