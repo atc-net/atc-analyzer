@@ -440,6 +440,16 @@ The project implements two separate analyzers for enforcing global usings, follo
 - Best for: Library projects, projects with many third-party dependencies
 - Implementation: `GlobalUsingsCommonAnalyzer.cs` + `GlobalUsingsCommonCodeFixProvider.cs`
 
+**Automatic Mutual Exclusivity:**
+
+By default, ATC220 excludes namespaces that ATC221 handles (configured via `dotnet_diagnostic.ATC220.exclude_common_namespaces`, default `true`). This means both rules can be enabled simultaneously without producing duplicate warnings:
+- ATC220 flags **non-common** namespaces (third-party, custom)
+- ATC221 flags **common** namespaces (System, Microsoft, Atc)
+
+ATC220 reads ATC221's `namespace_prefixes` setting to determine which namespaces to skip, so custom prefix configurations stay in sync.
+
+To make ATC220 flag ALL namespaces (original behavior), set `exclude_common_namespaces = false` in `.editorconfig`.
+
 **Why Two Separate Analyzers?**
 
 While these analyzers could theoretically be merged into one with different rule IDs, they are kept separate to:
@@ -492,6 +502,19 @@ dotnet_diagnostic.ATC210.max_line_length = 100
 - **Invalid values**: Non-numeric values silently fall back to the default
 
 The configuration uses the standard Roslyn `.editorconfig` option naming convention: `dotnet_diagnostic.{RULE_ID}.option_name`
+
+#### Exclude Common Namespaces (ATC220)
+
+ATC220 supports excluding common namespaces to avoid overlap with ATC221:
+
+```editorconfig
+[*.cs]
+# Exclude common namespaces handled by ATC221 (default: true)
+dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+```
+
+- **Default value**: true (common namespaces are excluded)
+- When true, ATC220 reads ATC221's `namespace_prefixes` to determine which namespaces to skip
 
 #### Reading Configuration in Analyzers
 

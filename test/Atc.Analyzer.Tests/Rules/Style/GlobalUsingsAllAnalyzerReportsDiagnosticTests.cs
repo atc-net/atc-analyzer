@@ -6,11 +6,12 @@ using AnalyzerVerifier = CSharpAnalyzerVerifier<GlobalUsingsAllAnalyzer>;
 
 [SuppressMessage("", "AsyncFixer01:The method does not need to use async/await", Justification = "OK - Test code")]
 [SuppressMessage("", "SA1135::The method does not need to use async/await", Justification = "OK - Test code")]
+[SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
 [SuppressMessage("Naming", "MA0048:File name must match type name", Justification = "OK - Partial class")]
 public sealed partial class GlobalUsingsAllAnalyzerTests
 {
     [Fact]
-    public async Task ReportsDiagnostic_SystemNamespace()
+    public async Task ReportsDiagnostic_SystemNamespace_WhenExcludeCommonDisabled()
     {
         const string code = """
                             [|using System;|]
@@ -23,11 +24,27 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
                             }
                             """;
 
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+        var test = new CSharpAnalyzerTest<GlobalUsingsAllAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+            """));
+
+        await test.RunAsync();
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_SystemCollectionsGeneric()
+    public async Task ReportsDiagnostic_SystemCollectionsGeneric_WhenExcludeCommonDisabled()
     {
         const string code = """
                             [|using System.Collections.Generic;|]
@@ -38,7 +55,23 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
                             }
                             """;
 
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+        var test = new CSharpAnalyzerTest<GlobalUsingsAllAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+            """));
+
+        await test.RunAsync();
     }
 
     [Fact]
@@ -70,7 +103,7 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_MicrosoftNamespace()
+    public async Task ReportsDiagnostic_MicrosoftNamespace_WhenExcludeCommonDisabled()
     {
         const string code = """
                             [|using Microsoft.Extensions.Logging;|]
@@ -80,14 +113,62 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
                             }
                             """;
 
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+        var test = new CSharpAnalyzerTest<GlobalUsingsAllAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+            """));
+
+        await test.RunAsync();
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_AtcNamespace()
+    public async Task ReportsDiagnostic_AtcNamespace_WhenExcludeCommonDisabled()
     {
         const string code = """
                             [|using Atc.Utilities;|]
+
+                            public class Sample
+                            {
+                            }
+                            """;
+
+        var test = new CSharpAnalyzerTest<GlobalUsingsAllAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+            """));
+
+        await test.RunAsync();
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_MultipleNamespaces_OnlyNonCommon()
+    {
+        const string code = """
+                            using System;
+                            [|using Xunit;|]
+                            [|using MyCompany.Utilities;|]
 
                             public class Sample
                             {
@@ -98,7 +179,7 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
     }
 
     [Fact]
-    public async Task ReportsDiagnostic_MultipleNamespaces()
+    public async Task ReportsDiagnostic_AllNamespaces_WhenExcludeCommonDisabled()
     {
         const string code = """
                             [|using System;|]
@@ -110,6 +191,22 @@ public sealed partial class GlobalUsingsAllAnalyzerTests
                             }
                             """;
 
-        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+        var test = new CSharpAnalyzerTest<GlobalUsingsAllAnalyzer, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = code,
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.TestState.AnalyzerConfigFiles.Add((
+            "/.editorconfig",
+            """
+            root = true
+
+            [*]
+            dotnet_diagnostic.ATC220.exclude_common_namespaces = false
+            """));
+
+        await test.RunAsync();
     }
 }

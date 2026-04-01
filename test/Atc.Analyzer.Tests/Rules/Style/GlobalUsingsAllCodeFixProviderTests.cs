@@ -5,10 +5,11 @@ using CodeFixVerifier = CSharpCodeFixVerifier<GlobalUsingsAllAnalyzer, GlobalUsi
 #pragma warning restore SA1135 // Using directives must be qualified
 
 [SuppressMessage("", "AsyncFixer01:The method does not need to use async/await", Justification = "OK - Test code")]
+[SuppressMessage("", "S2699:Add at least one assertion to this test case", Justification = "OK - RunAsync is the assertion")]
 public sealed class GlobalUsingsAllCodeFixProviderTests
 {
     [Fact]
-    public Task FixUsing_MoveSystemNamespaceToGlobalUsings()
+    public async Task FixUsing_MoveSystemNamespaceToGlobalUsings()
     {
         const string source = """
                               using System;
@@ -40,7 +41,18 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
                 .WithSpan(1, 1, 1, 14),
         };
 
-        return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+        var test = new CSharpCodeFixTest<GlobalUsingsAllAnalyzer, GlobalUsingsAllCodeFixProvider, DefaultVerifier>
+        {
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            TestCode = source.NormalizeLineEndings(),
+            FixedCode = fixedSource.NormalizeLineEndings(),
+            CompilerDiagnostics = CompilerDiagnostics.None,
+        };
+
+        test.ExpectedDiagnostics.AddRange(expected);
+        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\ndotnet_diagnostic.ATC220.exclude_common_namespaces = false\n"));
+
+        await test.RunAsync();
     }
 
     [Fact]
@@ -207,7 +219,7 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
         test.FixedState.Sources.Add(("GlobalUsings.cs", fixedGlobalUsingsSource.NormalizeLineEndings()));
 
         test.ExpectedDiagnostics.AddRange(expected);
-        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\n"));
+        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\ndotnet_diagnostic.ATC220.exclude_common_namespaces = false\n"));
 
         await test.RunAsync();
 
@@ -266,7 +278,7 @@ public sealed class GlobalUsingsAllCodeFixProviderTests
         test.FixedState.Sources.Add(("GlobalUsings.cs", fixedGlobalUsingsSource.NormalizeLineEndings()));
 
         test.ExpectedDiagnostics.AddRange(expected);
-        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\n"));
+        test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", "root = true\n\n[*]\nend_of_line = lf\ndotnet_diagnostic.ATC220.exclude_common_namespaces = false\n"));
 
         await test.RunAsync();
 

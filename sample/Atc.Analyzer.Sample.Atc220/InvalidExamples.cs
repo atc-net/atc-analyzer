@@ -1,11 +1,13 @@
 namespace Atc.Analyzer.Sample.Atc220;
 
-// These usings SHOULD be moved to GlobalUsings.cs and will trigger ATC220
+// These usings SHOULD be moved to GlobalUsings.cs
+// By default, ATC220 skips common namespaces (System/Microsoft/Atc) to avoid overlap with ATC221
+// System.Linq and System.Text are flagged by ATC221, while Xunit is flagged by ATC220
 #pragma warning disable ATC220, ATC221
 
-using System.Linq;           // ATC220: Should be in GlobalUsings.cs
-using System.Text;           // ATC220: Should be in GlobalUsings.cs
-using Xunit;                 // ATC220: Should be in GlobalUsings.cs (ALL namespaces)
+using System.Linq;           // ATC221: Should be in GlobalUsings.cs (common namespace)
+using System.Text;           // ATC221: Should be in GlobalUsings.cs (common namespace)
+using Xunit;                 // ATC220: Should be in GlobalUsings.cs (non-common namespace)
 
 #pragma warning disable CA1303
 #pragma warning disable CA1822
