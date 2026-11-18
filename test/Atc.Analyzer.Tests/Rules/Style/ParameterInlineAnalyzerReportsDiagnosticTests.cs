@@ -378,4 +378,55 @@ public sealed partial class ParameterInlineAnalyzerTests
 
         await test.RunAsync();
     }
+
+    [Fact]
+    public async Task ReportsDiagnostic_InterfaceMethodWithSingleParameterOnSameLine_DeclarationEndsWithSemicolonOverLimit()
+    {
+        // Up to ")" the line is exactly 80 characters; the trailing ";" makes it 81
+        const string code = """
+                            public interface IExample
+                            {
+                                Task<XBusVersion?> GetVersion[|(CancellationToken cancellationToken = default)|];
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_AbstractMethodWithSingleParameterOnSameLine_DeclarationEndsWithSemicolonOverLimit()
+    {
+        const string code = """
+                            public abstract class Sample
+                            {
+                                public abstract Task HandleVersionAsync[|(CancellationToken cancellationToken)|];
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_DelegateWithSingleParameterOnSameLine_DeclarationEndsWithSemicolonOverLimit()
+    {
+        const string code = """
+                            public delegate void VersionChangedHandler[|(FirmwareVersionEventArgs versionArgs)|];
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_MethodWithSingleParameterOnNewLine_ExpressionBodyFitsWhenInline()
+    {
+        const string code = """
+                            public class Sample
+                            {
+                                public int Double[|(
+                                    int value)|] => value * 2;
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }
