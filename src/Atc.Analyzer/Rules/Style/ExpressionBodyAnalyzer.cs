@@ -127,7 +127,7 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
         SyntaxNode declarationNode,
         SyntaxToken identifier)
     {
-        var sourceText = declarationNode.SyntaxTree.GetText();
+        var sourceText = declarationNode.SyntaxTree.GetText(context.CancellationToken);
 
         // Get the configured max line length from .editorconfig
         var options = context.Options.AnalyzerConfigOptionsProvider.GetOptions(context.Node.SyntaxTree);
@@ -213,7 +213,7 @@ public sealed class ExpressionBodyAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var sourceText = accessorDeclaration.SyntaxTree.GetText();
+        var sourceText = accessorDeclaration.SyntaxTree.GetText(context.CancellationToken);
         var arrowToken = accessorDeclaration.ExpressionBody.ArrowToken;
         var expression = accessorDeclaration.ExpressionBody.Expression;
 

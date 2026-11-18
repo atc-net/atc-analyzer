@@ -142,7 +142,7 @@ public sealed class MethodChainSeparationAnalyzer : DiagnosticAnalyzer
             // If base expression is an identifier, check if it's a type (static method call) vs variable/property
             if (baseExpression is IdentifierNameSyntax identifier)
             {
-                var symbolInfo = context.SemanticModel.GetSymbolInfo(identifier);
+                var symbolInfo = context.SemanticModel.GetSymbolInfo(identifier, context.CancellationToken);
                 var symbol = symbolInfo.Symbol;
 
                 // If it's a type (class/struct/interface), it's a static method call - allow it
