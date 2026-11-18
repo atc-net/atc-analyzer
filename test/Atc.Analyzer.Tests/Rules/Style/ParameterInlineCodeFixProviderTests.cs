@@ -412,4 +412,35 @@ public sealed class ParameterInlineCodeFixProviderTests
 
         return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
     }
+
+    [Fact]
+    public Task FixInterfaceMethod_MoveParameterToNewLine_DeclarationEndsWithSemicolonOverLimit()
+    {
+        // Up to ")" the line is exactly 80 characters; the trailing ";" makes it 81.
+        // The fixed code must not report the opposite diagnostic.
+        const string source = """
+                              public interface IExample
+                              {
+                                  Task<XBusVersion?> GetVersion(CancellationToken cancellationToken = default);
+                              }
+                              """;
+
+        const string fixedSource = """
+                                   public interface IExample
+                                   {
+                                       Task<XBusVersion?> GetVersion(
+                                           CancellationToken cancellationToken = default);
+                                   }
+                                   """;
+
+        var expected = new[]
+        {
+            new DiagnosticResult(
+                "ATC201",
+                DiagnosticSeverity.Warning)
+                .WithSpan(3, 34, 3, 81),
+        };
+
+        return CodeFixVerifier.VerifyCodeFixAsync(source, expected, fixedSource);
+    }
 }

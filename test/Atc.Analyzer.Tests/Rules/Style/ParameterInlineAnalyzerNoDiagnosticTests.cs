@@ -342,4 +342,44 @@ public sealed partial class ParameterInlineAnalyzerTests
 
         await test.RunAsync();
     }
+
+    [Fact]
+    public async Task NoDiagnostic_InterfaceMethodWithSingleParameterOnNewLine_DeclarationEndsWithSemicolonAtLimit()
+    {
+        // Up to ")" the line is exactly 80 characters; the trailing ";" makes it 81
+        const string code = """
+                            public interface IExample
+                            {
+                                Task<XBusVersion?> GetVersion(
+                                    CancellationToken cancellationToken = default);
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_AbstractMethodWithSingleParameterOnNewLine_DeclarationEndsWithSemicolonAtLimit()
+    {
+        const string code = """
+                            public abstract class Sample
+                            {
+                                public abstract Task HandleVersionAsync(
+                                    CancellationToken cancellationToken);
+                            }
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_DelegateWithSingleParameterOnNewLine_DeclarationEndsWithSemicolonAtLimit()
+    {
+        const string code = """
+                            public delegate void VersionChangedHandler(
+                                FirmwareVersionEventArgs versionArgs);
+                            """;
+
+        await AnalyzerVerifier.VerifyAnalyzerAsync(code);
+    }
 }

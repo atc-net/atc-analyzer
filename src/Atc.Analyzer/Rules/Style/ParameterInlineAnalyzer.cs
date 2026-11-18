@@ -97,7 +97,7 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
         var maxLineLength = options.GetMaxLineLength(RuleIdentifierConstants.Style.ParameterInline);
 
         var parameter = parameterList.Parameters[0];
-        var sourceText = declarationNode.SyntaxTree.GetText();
+        var sourceText = declarationNode.SyntaxTree.GetText(context.CancellationToken);
 
         // Get the line where the opening paren is located
         var openParenLineSpan = parameterList.OpenParenToken.GetLocation().GetLineSpan();
@@ -130,10 +130,11 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
 
         // Case 2: Parameter is on a DIFFERENT line than the opening paren
         // Calculate what the line length would be if the parameter was on the same line
-        var parameterText = parameter.ToString();
-        var textUpToAndIncludingOpenParen = openParenLineText.Substring(0, openParenPosition + 1);
-        var hypotheticalLine = textUpToAndIncludingOpenParen + parameterText + ")";
-        var hypotheticalLength = hypotheticalLine.Length;
+        var hypotheticalLength = GetJoinedLineLength(
+            sourceText,
+            openParenLineText.Substring(0, openParenPosition + 1),
+            parameter,
+            parameterList.CloseParenToken);
 
         // If the hypothetical single-line length would be <= maxLineLength, parameter should be inline
         if (hypotheticalLength <= maxLineLength)
@@ -145,5 +146,31 @@ public sealed class ParameterInlineAnalyzer : DiagnosticAnalyzer
                 message);
             context.ReportDiagnostic(diagnostic);
         }
+    }
+
+    /// <summary>
+    /// Gets the length the line would have with the parameter joined onto the opening paren line.
+    /// The text after the closing paren on its line (e.g. ";", "=> ...", "where ...") is included,
+    /// so the result matches the line length measured when the parameter is already inline.
+    /// </summary>
+    private static int GetJoinedLineLength(
+        SourceText sourceText,
+        string textUpToAndIncludingOpenParen,
+        ParameterSyntax parameter,
+        SyntaxToken closeParenToken)
+    {
+        var joinedLength = textUpToAndIncludingOpenParen.Length + parameter.ToString().Length + 1;
+        if (closeParenToken.IsMissing)
+        {
+            return joinedLength;
+        }
+
+        var closeParenEnd = closeParenToken.Span.End;
+        var closeParenLine = sourceText.Lines.GetLineFromPosition(closeParenEnd);
+        var textAfterCloseParen = sourceText
+            .ToString(TextSpan.FromBounds(closeParenEnd, closeParenLine.End))
+            .TrimEnd();
+
+        return joinedLength + textAfterCloseParen.Length;
     }
 }
