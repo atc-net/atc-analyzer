@@ -3,7 +3,7 @@
 
   <PropertyGroup Label="Metadata configuration">
     <OrganizationName>atc-net</OrganizationName>
-    <RepositoryName>atc-xaml-toolkit</RepositoryName>
+    <RepositoryName>atc-analyzer</RepositoryName>
   </PropertyGroup>
 
   <!-- Solution wide properties -->
@@ -12,6 +12,13 @@
     <Authors>$(OrganizationName)</Authors>
     <NeutralLanguage>en</NeutralLanguage>
     <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Versioning">
+    <!-- The 'x-release-please-' comments are used to inform the release-please action that it should update the semver version here -->
+    <!-- x-release-please-start-version -->
+    <Version>0.1.23</Version>
+    <!-- x-release-please-end -->
   </PropertyGroup>
 
   <PropertyGroup Label="Compile settings">
