@@ -547,7 +547,7 @@ private static void AnalyzeMethod(SyntaxNodeAnalysisContext context)
    - Performance: ATC401-ATC499
    - Security: ATC501-ATC599
 
-3. The project uses Nerdbank.GitVersioning for version management (configured in `version.json`)
+3. Versioning and releases are handled by release-please: the version lives in `Directory.Build.props` (between the `x-release-please` markers) and `.release-please-manifest.json`. Use Conventional Commits (`feat:`, `fix:`, ...) so the changelog and version bump are generated correctly.
 
 ## Solution Structure
 
