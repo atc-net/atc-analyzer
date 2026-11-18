@@ -5,19 +5,19 @@ internal class LocalFunctionExamples
     public void MethodWithLocalFunctions()
     {
         // Valid: Local function with no parameters
-        void LocalNoParams()
+        static void LocalNoParams()
         {
             Console.WriteLine("Local function no params");
         }
 
         // Valid: Local function with single parameter
-        void LocalSingleParam(int x)
+        static void LocalSingleParam(int x)
         {
             Console.WriteLine($"Local single param: {x}");
         }
 
         // Valid: Local function with multiple parameters on separate lines
-        void LocalMultipleParams(
+        static void LocalMultipleParams(
             int x,
             string y)
         {
@@ -25,7 +25,7 @@ internal class LocalFunctionExamples
         }
 
         // Valid: Async local function
-        async Task LocalAsync(
+        static async Task LocalAsync(
             int id,
             string name)
         {

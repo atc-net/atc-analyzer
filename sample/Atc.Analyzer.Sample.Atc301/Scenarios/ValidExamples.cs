@@ -47,7 +47,7 @@ internal static partial class ValidExamples
     /// so ATC301 does not apply here.
     /// </summary>
     private static readonly Regex TraditionalCompiledRegex =
-        new(@"\d+", RegexOptions.Compiled);
+        new(@"\d+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public static void DemonstrateAllValidScenarios()
     {
